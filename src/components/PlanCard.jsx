@@ -1,24 +1,30 @@
 function PlanCard({ plan, onOpen }) {
+  const toneModifier =
+    plan.momentumTone === "hot" ? " plan-card__momentum--hot" : plan.momentumTone === "subtle" ? " plan-card__momentum--subtle" : "";
+
   return (
-    <article className={`event-card ${plan.featured ? "featured" : ""} ${plan.muted ? "muted" : ""}`}>
-      <div className="card-topline">
+    <article className={`plan-card${plan.featured ? " plan-card--featured" : ""}${plan.muted ? " plan-card--muted" : ""}`}>
+      <header className="plan-card__header">
         <span className={`circle-tag ${plan.circleTone}`}>{plan.circle}</span>
-        <span className={`momentum-tag ${plan.momentumTone === "hot" ? "hot" : plan.momentumTone === "subtle" ? "subtle" : ""}`}>{plan.momentumLabel}</span>
+        <span className={`plan-card__momentum${toneModifier}`}>{plan.momentumLabel}</span>
+      </header>
+
+      <div className="plan-card__content">
+        <h3 className="plan-card__title">{plan.title}</h3>
       </div>
 
-      <h3>{plan.title}</h3>
-      <div className="event-card-footer">
-        <div className="participant-stack" aria-label="Participants">
-          <div className="participant-stack text"> Ils ont réagit à ce plan : </div>
+      <footer className="plan-card__footer">
+        <div className="plan-card__participants" aria-label="Participants">
+          <span className="plan-card__participants-label">Ils ont réagi à ce plan :</span>
           {plan.participants.slice(0, 4).map((participant) => (
-            <img className="participant-avatar" src={participant.imagePath} alt={participant.name} key={participant.id} />
+            <img className="plan-card__avatar" src={participant.imagePath} alt={participant.name} key={participant.id} />
           ))}
         </div>
 
-        <button className="detail-link detail-link-button plan-card-cta" type="button" onClick={onOpen}>
-          <span>Voir les détails</span>
+        <button className="plan-card__cta" type="button" onClick={onOpen}>
+          <span>Voir les details</span>
         </button>
-      </div>
+      </footer>
     </article>
   );
 }

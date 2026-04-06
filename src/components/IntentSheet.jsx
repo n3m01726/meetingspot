@@ -24,8 +24,8 @@ function IntentSheet({
               {selectedAvatar ? <img className="intent-selected-image" src={selectedAvatar.imagePath} alt={selectedAvatar.name} /> : null}
             </div>
             <div className="intent-selected-copy">
-              <span className="intent-sheet-title">Creer un plan avec </span>
-              <span id="intent-sheet-title">{selectedAvatar?.name || "Ami selectionne"}</span>
+              <span className="intent-sheet-title">Créer un plan avec </span>
+              <span id="intent-sheet-title">{selectedAvatar?.name || "Ami sélectionné"}</span>
               <span className="intent-selected-meta">
                 {selectedAvatar ? `${selectedAvatar.availabilityLabel || availabilityLabelMap[selectedAvatar.availability]} • ${selectedAvatar.circle}` : ""}
               </span>
@@ -62,7 +62,7 @@ function IntentSheet({
           </div>
 
           <div className="intent-field">
-            <label>Visibilite</label>
+            <label>Visibilité</label>
             <select className="intent-visibility-select" value={form.visibility} onChange={(event) => onFormChange({ ...form, visibility: event.target.value })}>
               <option value="">Choisir</option>
               <option value="Inner Circle">Inner Circle uniquement</option>
@@ -106,7 +106,7 @@ function IntentSheet({
 
           <div className="intent-footer">
             <button className="ghost intent-back-button" type="button" onClick={onBack}>Retour</button>
-            <button className="primary-action" type="submit">Creer le plan</button>
+            <button className="primary-action" type="submit">Créer le plan</button>
           </div>
         </form>
       </section>

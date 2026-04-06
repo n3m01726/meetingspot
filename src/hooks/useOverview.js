@@ -45,7 +45,7 @@ function useOverview(currentUser) {
 
   const handleRsvp = async (planId, response) => {
     if (!currentUser?.id) {
-      const message = "Connecte-toi pour repondre a un plan.";
+      const message = "Connecte-toi pour répondre à un plan.";
       setError(message);
       throw new Error(message);
     }

@@ -22,7 +22,7 @@ export const availabilityToneMap = {
 export const availabilityLabelMap = {
   down: "Down",
   probable: "Fort probable",
-  maybe: "Peut-etre"
+  maybe: "Peut-être"
 };
 
 export const intentOptions = [
@@ -48,7 +48,7 @@ export const circleFilters = [
 ];
 
 export const visibilityFilters = [
-  { key: "all", label: "Toutes visibilites" },
+  { key: "all", label: "Toutes visibilités" },
   { key: "Inner Circle", label: "Inner Circle" },
   { key: "Inner Circle + Connexions", label: "Inner + Connexions" },
   { key: "Connexions", label: "Connexions" }

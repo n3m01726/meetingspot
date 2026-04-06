@@ -49,7 +49,7 @@ function useIntentSheet(onPlanCreated) {
     event.preventDefault();
 
     if (!selectedAvatar || !form.visibility || !form.area.trim() || !form.venue.trim()) {
-      setFormError("Complete les champs requis avant de creer le plan.");
+      setFormError("Complète les champs requis avant de créer le plan.");
       return;
     }
 

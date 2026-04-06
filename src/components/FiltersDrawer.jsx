@@ -4,11 +4,11 @@ function FiltersDrawer({ filters, onFiltersChange }) {
   return (
     <section className="drawer-overlay" id="plans-controls">
       <a className="drawer-backdrop" href="#plans" aria-label="Fermer"></a>
-      <aside className="drawer-card" aria-label="Filtres et visibilite">
+      <aside className="drawer-card" aria-label="Filtres et visibilité">
         <div className="drawer-header">
           <div>
-            <p className="eyebrow">Plans spontanes</p>
-            <h3>Filtres et visibilite</h3>
+            <p className="eyebrow">Plans spontanés</p>
+            <h3>Filtres et visibilité</h3>
           </div>
           <a className="drawer-close" href="#plans" aria-label="Fermer le panneau">Fermer</a>
         </div>
@@ -31,7 +31,7 @@ function FiltersDrawer({ filters, onFiltersChange }) {
 
         <section className="drawer-section">
           <p className="drawer-label">Cercles</p>
-          <div className="audience-filters" aria-label="Filtres de visibilite">
+          <div className="audience-filters" aria-label="Filtres de visibilité">
             {circleFilters.map((filter) => (
               <button
                 key={filter.key}
@@ -46,8 +46,8 @@ function FiltersDrawer({ filters, onFiltersChange }) {
         </section>
 
         <section className="drawer-section">
-          <p className="drawer-label">Visibilite des plans</p>
-          <div className="audience-filters" aria-label="Filtres de visibilite des plans">
+          <p className="drawer-label">Visibilité des plans</p>
+          <div className="audience-filters" aria-label="Filtres de visibilité des plans">
             {visibilityFilters.map((filter) => (
               <button
                 key={filter.key}
@@ -62,31 +62,31 @@ function FiltersDrawer({ filters, onFiltersChange }) {
         </section>
 
         <section className="drawer-section">
-          <p className="drawer-label">Visibilite / interaction</p>
+          <p className="drawer-label">Visibilité / interaction</p>
           <div className="visibility-grid">
             <article className="visibility-card vc-inner">
               <strong>Inner Circle</strong>
-              <p>Voient tout immediatement. Peuvent drop-in directement. RSVP flexible, absence = OK.</p>
+              <p>Voient tout immédiatement. Peuvent drop-in directement. RSVP flexible, absence = OK.</p>
             </article>
             <article className="visibility-card vc-connections">
               <strong>Connexions / connaissances</strong>
-              <p>Voient intention + quartier approximatif. Peuvent demander les details si interesses.</p>
+              <p>Voient intention + quartier approximatif. Peuvent demander les détails si intéressés.</p>
             </article>
             <article className="visibility-card vc-passive">
               <strong>Vu une fois / social passif</strong>
-              <p>Invitation anonymisee. Details reveles seulement si confirmes.</p>
+              <p>Invitation anonymisée. Détails révélés seulement si confirmés.</p>
             </article>
             <article className="visibility-card vc-private">
               <strong>Ohhh, une date en vue!</strong>
-              <p>Invitation totalement privee. Details reveles uniquement aux participants.</p>
+              <p>Invitation totalement privée. Détails révélés uniquement aux participants.</p>
             </article>
             <article className="visibility-card vc-ghosted">
-              <strong>Ghosteurs recurrents</strong>
-              <p>Voient l'intention mais pas les details sensibles.</p>
+              <strong>Ghosteurs récurrents</strong>
+              <p>Voient l'intention mais pas les détails sensibles.</p>
             </article>
             <article className="visibility-card vc-blocked">
               <strong>Watch out / block list</strong>
-              <p>Aucun acces. Bloque automatiquement.</p>
+              <p>Aucun accès. Bloqué automatiquement.</p>
             </article>
           </div>
         </section>

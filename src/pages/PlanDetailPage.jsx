@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, MapPinned, MessageCircleMore, Plus, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowLeft, MapPinned, MessageCircleMore, ShieldCheck, Sparkles, Users } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import AuthSwitcher from "../components/AuthSwitcher.jsx";
 import DetailMeta from "../components/DetailMeta.jsx";
@@ -32,7 +32,7 @@ function PlanDetailPage() {
 
   const handleRsvp = async (response) => {
     if (!auth.currentUser) {
-      setFeedback("Connecte-toi pour repondre a ce plan.");
+      setFeedback("Connecte-toi pour répondre à ce plan.");
       return;
     }
 
@@ -43,7 +43,7 @@ function PlanDetailPage() {
         body: JSON.stringify({ response })
       });
       setPlan(updatedPlan);
-      setFeedback("Reponse enregistree.");
+      setFeedback("Réponse enregistrée.");
     } catch (nextError) {
       setFeedback(nextError.message);
     }
@@ -64,36 +64,30 @@ function PlanDetailPage() {
           <ArrowLeft size={18} />
           <span>Retour aux plans</span>
         </button>
-        <button className="ghost-button strong icon-button" type="button" onClick={() => navigate("/")}>
-          <Plus size={18} />
-          <span>Nouveau plan</span>
-        </button>
       </header>
 
       <main className="detail-page">
         <section className="panel detail-hero">
           <div className="detail-hero-top">
             <span className={`circle-tag ${plan.circleTone}`}>{plan.circle}</span>
-            <span className="activity-tag">{plan.activity}</span>
             <span className={`momentum-tag ${plan.momentumTone === "hot" ? "hot" : plan.momentumTone === "subtle" ? "subtle" : ""}`}>{plan.momentumLabel}</span>
           </div>
 
-          <p className="eyebrow">Activite</p>
           <h2>{plan.title}</h2>
           <p className="detail-summary">{plan.summary}</p>
 
           <div className="detail-meta-grid">
-            <DetailMeta icon={<Sparkles size={16} />} label="Heure approximative" value={plan.timeLabel} copy={`Fenetre souple de ${plan.durationLabel}. On part des que 2-3 personnes sont la.`} />
+            <DetailMeta icon={<Sparkles size={16} />} label="Heure approximative" value={plan.timeLabel} copy={`Fenêtre souple de ${plan.durationLabel}. On part dès que 2-3 personnes sont là.`} />
             <DetailMeta icon={<MapPinned size={16} />} label="Lieu" value={plan.locationDetail} copy={plan.addressRule} />
-            <DetailMeta icon={<Users size={16} />} label="Participants" value={`${plan.confirmedCount} confirmes · ${plan.interestedCount} interesses`} copy={`${plan.circle} voit le contexte du plan.`} />
-            <DetailMeta icon={<ShieldCheck size={16} />} label="Visibilite" value={plan.visibility} copy="Les details sensibles restent caches tant que la presence n'est pas confirmee." />
+            <DetailMeta icon={<Users size={16} />} label="Participants" value={`${plan.confirmedCount} confirmés • ${plan.interestedCount} intéressés`} copy={`${plan.circle} voit le contexte du plan.`} />
+            <DetailMeta icon={<ShieldCheck size={16} />} label="Visibilité" value={plan.visibility} copy="Les détails sensibles restent cachés tant que la présence n'est pas confirmée." />
           </div>
         </section>
 
         <section className="panel">
           <div className="section-heading compact">
             <div>
-              <p className="eyebrow">Repondre au plan</p>
+              <p className="eyebrow">Répondre au plan</p>
             </div>
           </div>
 
@@ -102,17 +96,17 @@ function PlanDetailPage() {
             users={auth.users}
             onLogin={async (userId) => {
               await auth.login(userId);
-              setFeedback("Profil connecte.");
+              setFeedback("Profil connecté.");
             }}
             onLogout={async () => {
               await auth.logout();
-              setFeedback("Profil deconnecte.");
+              setFeedback("Profil déconnecté.");
             }}
           />
 
           <div className="detail-actions">
             <button className="primary-action" type="button" onClick={() => handleRsvp("down")}>Je suis dispo</button>
-            <button className="secondary" type="button" onClick={() => handleRsvp("maybe")}>Peut-etre</button>
+            <button className="secondary" type="button" onClick={() => handleRsvp("maybe")}>Peut-être</button>
             <button className="ghost" type="button" onClick={() => handleRsvp("probable")}>Je passe</button>
           </div>
           {feedback ? <p className="eyebrow">{feedback}</p> : null}
@@ -122,7 +116,7 @@ function PlanDetailPage() {
           <div className="participants-header">
             <div>
               <p className="eyebrow">Participants</p>
-              <h3>Qui est deja dedans</h3>
+              <h3>Qui est déjà dedans</h3>
             </div>
           </div>
 
@@ -143,7 +137,7 @@ function PlanDetailPage() {
         <section className="panel visibility-card-large">
           <div className="section-heading compact">
             <div>
-              <p className="eyebrow">Visibilite</p>
+              <p className="eyebrow">Visibilité</p>
               <h3>Qui voit quoi</h3>
             </div>
           </div>
@@ -161,7 +155,7 @@ function PlanDetailPage() {
         <section className="panel checkins-card">
           <div className="checkins-header">
             <div>
-              <p className="eyebrow">Check-ins legers</p>
+              <p className="eyebrow">Check-ins légers</p>
               <h3>Le plan bouge comment</h3>
             </div>
           </div>
@@ -173,7 +167,7 @@ function PlanDetailPage() {
                 <div>
                   <span className="checkin-meta">
                     <MessageCircleMore size={16} />
-                    <span>{checkin.name} · il y a {checkin.minutesAgo} min</span>
+                    <span>{checkin.name} • il y a {checkin.minutesAgo} min</span>
                   </span>
                   <p>{checkin.message}</p>
                 </div>

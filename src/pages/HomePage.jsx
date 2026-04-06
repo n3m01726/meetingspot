@@ -29,6 +29,18 @@ function HomePage() {
 
   return (
     <>
+      <AuthSwitcher
+        currentUser={auth.currentUser}
+        users={auth.users}
+        onLogin={async (userId) => {
+          await auth.login(userId);
+          await overviewState.reloadOverview(overviewState.filters);
+        }}
+        onLogout={async () => {
+          await auth.logout();
+          await overviewState.reloadOverview(overviewState.filters);
+        }}
+      />
       <div className="page-shell">
         <header className="hero">
           <nav className="topbar">
@@ -43,20 +55,8 @@ function HomePage() {
               <div className="inline-stats" aria-label="Statistiques globales">
                 <StatItem value={overview.stats.availableNow} label="personnes dispo dans l'heure" />
                 <StatItem value={overview.stats.activePlans} label="plans actifs autour de toi" />
-                <StatItem value={overview.stats.averageRadius} label="rayon moyen des plans spontanes" />
+                <StatItem value={overview.stats.averageRadius} label="rayon moyen des plans spontanés" />
               </div>
-              <AuthSwitcher
-                currentUser={auth.currentUser}
-                users={auth.users}
-                onLogin={async (userId) => {
-                  await auth.login(userId);
-                  await overviewState.reloadOverview(overviewState.filters);
-                }}
-                onLogout={async () => {
-                  await auth.logout();
-                  await overviewState.reloadOverview(overviewState.filters);
-                }}
-              />
             </div>
             <div className="mobile-actions">
               <details className="mobile-menu">
@@ -64,11 +64,11 @@ function HomePage() {
                   <Menu size={18} />
                 </summary>
                 <div className="mobile-menu-sheet">
-                  <button type="button" onClick={() => overview.presence[0] && intentSheet.openIntentSheet(overview.présence[0])}>
+                  <button type="button" onClick={() => overview.presence[0] && intentSheet.openIntentSheet(overview.presence[0])}>
                     <Plus size={16} />
                     <span>Créer un plan</span>
                   </button>
-                  <a href="#presence"><Users size={16} /><span>Qui est là?</span></a>
+                  <a href="#presence"><Users size={16} /><span>Qui est là ?</span></a>
                   <a href="#plans"><Sparkles size={16} /><span>Plans spontanés</span></a>
                 </div>
               </details>
@@ -85,7 +85,7 @@ function HomePage() {
           <section className="panel presence-panel" id="presence">
             <div className="section-heading compact">
               <div>
-                <h4 className="eyebrow">Qui est là?</h4>
+                <h4 className="eyebrow">Qui est là ?</h4>
               </div>
             </div>
 
