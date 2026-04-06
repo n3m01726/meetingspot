@@ -36,7 +36,7 @@ function HomePage() {
               <span className="brand-mark">MS</span>
               <div>
                 <h1>meetingspot</h1>
-                <p className="eyebrow-title">Spontaneite sociale</p>
+                <p className="eyebrow-title">Spontanéité sociale</p>
               </div>
             </div>
             <div className="topbar-meta">
@@ -64,12 +64,12 @@ function HomePage() {
                   <Menu size={18} />
                 </summary>
                 <div className="mobile-menu-sheet">
-                  <button type="button" onClick={() => overview.presence[0] && intentSheet.openIntentSheet(overview.presence[0])}>
+                  <button type="button" onClick={() => overview.presence[0] && intentSheet.openIntentSheet(overview.présence[0])}>
                     <Plus size={16} />
-                    <span>Creer un plan</span>
+                    <span>Créer un plan</span>
                   </button>
-                  <a href="#presence"><Users size={16} /><span>Qui est la</span></a>
-                  <a href="#plans"><Sparkles size={16} /><span>Plans spontanes</span></a>
+                  <a href="#presence"><Users size={16} /><span>Qui est là?</span></a>
+                  <a href="#plans"><Sparkles size={16} /><span>Plans spontanés</span></a>
                 </div>
               </details>
             </div>
@@ -85,7 +85,7 @@ function HomePage() {
           <section className="panel presence-panel" id="presence">
             <div className="section-heading compact">
               <div>
-                <h4 className="eyebrow">Qui est la</h4>
+                <h4 className="eyebrow">Qui est là?</h4>
               </div>
             </div>
 
@@ -117,7 +117,7 @@ function HomePage() {
           <section className="panel plans-panel" id="plans">
             <div className="section-heading">
               <div>
-                <h4 className="eyebrow">Plans spontanes</h4>
+                <h4 className="eyebrow">Plans spontanés</h4>
               </div>
               <div className="plans-heading-actions">
                 <a className="filter-drawer-trigger" href="#plans-controls" aria-label="Ouvrir les filtres">
@@ -139,7 +139,6 @@ function HomePage() {
               ))}
             </div>
 
-            {auth.currentUser ? null : <p className="eyebrow">Connecte-toi pour creer un plan ou repondre.</p>}
             {overviewState.error ? <p className="eyebrow">{overviewState.error}</p> : null}
             {overview.plans.length === 0 ? <p className="eyebrow">Aucun plan pour ce filtre.</p> : null}
 
@@ -149,13 +148,6 @@ function HomePage() {
                   key={plan.id}
                   plan={plan}
                   onOpen={() => navigate(`/plans/${plan.id}`)}
-                  onRsvp={async (planId, response) => {
-                    try {
-                      await overviewState.handleRsvp(planId, response);
-                    } catch (error) {
-                      console.error(error);
-                    }
-                  }}
                 />
               ))}
             </div>

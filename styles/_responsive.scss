@@ -1,4 +1,6 @@
-@media (min-width: 981px) {
+@use "breakpoints" as bp;
+
+@include bp.up-lg {
  .topbar {
     align-items: center;
   }
@@ -25,7 +27,7 @@
   }
 }
 
-@media (max-width: 980px) {
+@include bp.down-md {
   .content-grid {
     grid-template-columns: 1fr;
   }
@@ -58,7 +60,7 @@
   }
 }
 
-@media (max-width: 680px) {
+@include bp.down-sm {
   .page-shell {
     width: min(100% - 1rem, 100%);
     padding-top: 0.75rem;
@@ -120,19 +122,6 @@
     border-radius: 0.9rem;
   }
 
-  .action-row {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .plans-panel .event-detail,
-  .plans-panel .participant-copy,
-  .plans-panel .action-row .ghost {
-    display: none;
-  }
-  .plans-panel .detail-link span 
-  { margin: 10px;}
-
   .plans-panel .event-card {
     padding: 0.9rem;
   }
@@ -159,23 +148,18 @@
     font-size: 0.74rem;
   }
 
-  .plans-panel .participants-row {
-    margin-bottom: 0.8rem;
-  }
-
-  .plans-panel .detail-link {
-    margin-top: 0.2rem;
-    justify-self: end;
-  }
-
-  .plans-panel .detail-link i {
-    width: 1.05rem;
-    height: 1.05rem;
-  }
-
-  .participants-row {
-    align-items: flex-start;
+  .plans-panel .event-card-footer {
+    align-items: stretch;
     flex-direction: column;
+  }
+
+  .plans-panel .participant-stack {
+    min-height: 0;
+  }
+
+  .plans-panel .plan-card-cta {
+    width: 100%;
+    justify-content: center;
   }
 
   .intent-sheet {

@@ -27,7 +27,7 @@
 }
 
 button.back-link,
-button.detail-link-button {
+button.detail-link-button:not(.plan-card-cta) {
   padding: 0;
   border: none;
   background: transparent;
@@ -92,13 +92,11 @@ button.detail-link-button {
   border: 1px solid var(--border-soft);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 8px 18px rgba(16, 33, 23, 0.04);
   transition:
-    transform var(--duration-medium) var(--ease-standard),
     box-shadow var(--duration-medium) var(--ease-standard),
     border-color var(--duration-fast) var(--ease-standard);
 }
 
 .detail-meta-card:hover {
-  transform: translateY(-4px);
   border-color: rgba(45, 109, 246, 0.12);
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.92), 0 16px 26px rgba(16, 33, 23, 0.07);
 }
@@ -178,13 +176,11 @@ button.detail-link-button {
   background: var(--surface-soft);
   border: 1px solid var(--border-soft);
   transition:
-    transform var(--duration-fast) var(--ease-snappy),
     box-shadow var(--duration-medium) var(--ease-standard),
     border-color var(--duration-fast) var(--ease-standard);
 }
 
 .participant-row:hover {
-  transform: translateY(-3px);
   border-color: rgba(45, 109, 246, 0.12);
   box-shadow: 0 14px 24px rgba(16, 33, 23, 0.06);
 }
@@ -238,13 +234,10 @@ button.detail-link-button {
   border-radius: 1rem;
   border: 1px solid var(--border-soft);
   background: var(--surface-soft);
-  transition:
-    transform var(--duration-fast) var(--ease-snappy),
-    box-shadow var(--duration-medium) var(--ease-standard);
+  transition: box-shadow var(--duration-medium) var(--ease-standard);
 }
 
 .visibility-line:hover {
-  transform: translateY(-3px);
   box-shadow: 0 14px 24px rgba(16, 33, 23, 0.05);
 }
 
@@ -273,13 +266,10 @@ button.detail-link-button {
   border-radius: 1rem;
   background: var(--surface-soft);
   border: 1px solid var(--border-soft);
-  transition:
-    transform var(--duration-fast) var(--ease-snappy),
-    box-shadow var(--duration-medium) var(--ease-standard);
+  transition: box-shadow var(--duration-medium) var(--ease-standard);
 }
 
 .checkin-item:hover {
-  transform: translateY(-3px);
   box-shadow: 0 14px 24px rgba(16, 33, 23, 0.05);
 }
 

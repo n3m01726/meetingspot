@@ -1,37 +1,24 @@
-function PlanCard({ plan, onOpen, onRsvp }) {
+function PlanCard({ plan, onOpen }) {
   return (
     <article className={`event-card ${plan.featured ? "featured" : ""} ${plan.muted ? "muted" : ""}`}>
       <div className="card-topline">
         <span className={`circle-tag ${plan.circleTone}`}>{plan.circle}</span>
         <span className={`momentum-tag ${plan.momentumTone === "hot" ? "hot" : plan.momentumTone === "subtle" ? "subtle" : ""}`}>{plan.momentumLabel}</span>
       </div>
-      <button type="button" className="detail-link detail-link-button" onClick={onOpen}>
-        <h4>{plan.title}</h4>
-      </button>
-      <div className="meta-chips">
-        <span className="meta-chip">{plan.timeLabel}</span>
-        <span className="meta-chip">{plan.durationLabel}</span>
-        <span className="meta-chip">{plan.area}</span>
-      </div>
-      <p className={`event-detail ${plan.featured ? "featured-copy" : ""}`}>{plan.summary}</p>
-      <div className="participants-row">
+
+      <h3>{plan.title}</h3>
+      <div className="event-card-footer">
         <div className="participant-stack" aria-label="Participants">
-          {plan.participants.slice(0, 3).map((participant) => (
+          <div className="participant-stack text"> Ils ont réagit à ce plan : </div>
+          {plan.participants.slice(0, 4).map((participant) => (
             <img className="participant-avatar" src={participant.imagePath} alt={participant.name} key={participant.id} />
           ))}
         </div>
-        <p className="participant-copy">
-          Confirmes: {plan.participantSummary.confirmed.join(", ") || "Personne"} · Interesses: {plan.participantSummary.interested.join(", ") || "Personne"}
-        </p>
+
+        <button className="detail-link detail-link-button plan-card-cta" type="button" onClick={onOpen}>
+          <span>Voir les détails</span>
+        </button>
       </div>
-      <div className="action-row">
-        <button className="primary-action" type="button" onClick={() => onRsvp(plan.id, "down")}>Je suis dispo</button>
-        <button className="secondary" type="button" onClick={() => onRsvp(plan.id, "maybe")}>Peut-etre</button>
-        <button className="ghost" type="button" onClick={onOpen}>Voir</button>
-      </div>
-      <button className="detail-link detail-link-button" type="button" onClick={onOpen}>
-        <span>Voir le detail du plan</span>
-      </button>
     </article>
   );
 }
