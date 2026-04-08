@@ -7,6 +7,12 @@ import {
   Sparkles
 } from "lucide-react";
 
+export const VISIBILITY_MODES = {
+  RSVP_FIRST: "rsvp_first",
+  CIRCLE_OPEN: "circle_open",
+  PUBLIC_VIBE: "public_vibe"
+};
+
 export const toneClassMap = {
   default: "",
   yellow: "yellow",
@@ -46,4 +52,22 @@ export const visibilityFilters = [
   { key: "Inner Circle", label: "Inner Circle", tone: "inner" },
   { key: "Inner Circle + Connexions", label: "Inner + Connexions", tone: "" },
   { key: "Connexions", label: "Connexions", tone: "connections" }
+];
+
+export const visibilityModeOptions = [
+  {
+    key: VISIBILITY_MODES.RSVP_FIRST,
+    label: "🔐 RSVP first",
+    helper: "Les détails exacts se débloquent après approbation de l’hôte."
+  },
+  {
+    key: VISIBILITY_MODES.CIRCLE_OPEN,
+    label: "👥 Circle open",
+    helper: "Tout le cercle autorisé voit immédiatement tous les détails."
+  },
+  {
+    key: VISIBILITY_MODES.PUBLIC_VIBE,
+    label: "🌍 Public vibe",
+    helper: "Open beyond your circle. Best for public places and group-friendly moments."
+  }
 ];

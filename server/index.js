@@ -7,14 +7,17 @@ const {
   getPlanDetail,
   getPresenceRows,
   getUsers,
-  getCurrentUser,
   getUserById,
   createPlan,
-  upsertRsvp
+  updatePlan,
+  upsertRsvp,
+  approvePlanParticipant
 } = require("./db");
 const {
   validatePlanPayload,
+  validatePlanUpdatePayload,
   validateRsvpPayload,
+  validateApprovalPayload,
   validateAuthPayload
 } = require("./validators");
 const {
@@ -47,8 +50,8 @@ app.get("/api/health", (_request, response) => {
   });
 });
 
-app.get("/api/me", (_request, response) => {
-  response.json(_request.currentUser);
+app.get("/api/me", (request, response) => {
+  response.json(request.currentUser);
 });
 
 app.get("/api/users", (_request, response) => {
@@ -79,24 +82,22 @@ app.post("/api/auth/logout", (request, response) => {
   response.json({ ok: true });
 });
 
-app.get("/api/overview", (_request, response) => {
+app.get("/api/overview", (request, response) => {
   response.json(getOverview({
-    filter: _request.query.filter,
-    circle: _request.query.circle,
-    visibility: _request.query.visibility
-  }, _request.currentUser));
+    filter: request.query.filter,
+    visibility: request.query.visibility
+  }, request.currentUser));
 });
 
 app.get("/api/presence", (_request, response) => {
   response.json(getPresenceRows());
 });
 
-app.get("/api/plans", (_request, response) => {
+app.get("/api/plans", (request, response) => {
   response.json(getPlanSummaryRows({
-    filter: _request.query.filter,
-    circle: _request.query.circle,
-    visibility: _request.query.visibility
-  }, _request.currentUser));
+    filter: request.query.filter,
+    visibility: request.query.visibility
+  }, request.currentUser));
 });
 
 app.get("/api/plans/:id", (request, response) => {
@@ -131,7 +132,9 @@ app.post("/api/plans", (request, response) => {
   const plan = createPlan({
     title,
     activity: body.activity || "Custom",
-    circle: body.visibility || "Inner Circle + Connexions",
+    circle: body.circle || request.currentUser.circle,
+    visibilityMode: body.visibilityMode,
+    hostUserId: request.currentUser.id,
     momentumLabel: "Nouveau",
     momentumTone: "normal",
     timeLabel,
@@ -139,12 +142,43 @@ app.post("/api/plans", (request, response) => {
     area,
     locationDetail: venue,
     summary: body.summary || `Plan spontané proposé avec ${body.friendName || "un proche"}.`,
-    visibility: body.visibility || "Inner Circle + Connexions",
     addressRule: "Le lieu exact se confirme quand le plan prend forme.",
     isOnline: area.toLowerCase().includes("ligne") || venue.toLowerCase().includes("discord")
   });
 
   response.status(201).json(plan);
+});
+
+app.put("/api/plans/:id", (request, response) => {
+  const planId = Number.parseInt(request.params.id, 10);
+  if (!Number.isInteger(planId) || planId <= 0) {
+    response.status(400).json({ error: "Plan invalide" });
+    return;
+  }
+
+  if (!request.currentUser) {
+    response.status(401).json({ error: "Connexion requise." });
+    return;
+  }
+
+  const validation = validatePlanUpdatePayload(request.body || {});
+  if (!validation.ok) {
+    response.status(400).json({ error: validation.error });
+    return;
+  }
+
+  const body = validation.value;
+  const updatedPlan = updatePlan(planId, {
+    ...body,
+    isOnline: body.area.toLowerCase().includes("ligne") || body.locationDetail.toLowerCase().includes("discord")
+  }, request.currentUser);
+
+  if (!updatedPlan) {
+    response.status(403).json({ error: "Tu ne peux pas modifier ce plan." });
+    return;
+  }
+
+  response.json(updatedPlan);
 });
 
 app.post("/api/plans/:id/rsvp", (request, response) => {
@@ -172,6 +206,33 @@ app.post("/api/plans/:id/rsvp", (request, response) => {
   const updatedPlan = upsertRsvp(planId, userId, validation.value.response, request.currentUser);
   if (!updatedPlan) {
     response.status(404).json({ error: "Plan introuvable ou non accessible." });
+    return;
+  }
+
+  response.json(updatedPlan);
+});
+
+app.post("/api/plans/:id/approve", (request, response) => {
+  const planId = Number.parseInt(request.params.id, 10);
+  if (!Number.isInteger(planId) || planId <= 0) {
+    response.status(400).json({ error: "Plan invalide" });
+    return;
+  }
+
+  if (!request.currentUser) {
+    response.status(401).json({ error: "Connexion requise." });
+    return;
+  }
+
+  const validation = validateApprovalPayload(request.body || {});
+  if (!validation.ok) {
+    response.status(400).json({ error: validation.error });
+    return;
+  }
+
+  const updatedPlan = approvePlanParticipant(planId, request.currentUser.id, validation.value.participantUserId);
+  if (!updatedPlan) {
+    response.status(404).json({ error: "Approbation impossible pour ce plan." });
     return;
   }
 
