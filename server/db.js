@@ -134,6 +134,28 @@ const seedPlans = [
   }
 ];
 
+const seedRelationships = [
+  { owner_name: "Nora", member_name: "Sam", circle: "Inner Circle" },
+  { owner_name: "Nora", member_name: "Julien", circle: "Inner Circle" },
+  { owner_name: "Nora", member_name: "Maya", circle: "Connexions" },
+  { owner_name: "Nora", member_name: "Chris", circle: "Connexions" },
+  { owner_name: "Nora", member_name: "Ana", circle: "Connexions" },
+  { owner_name: "Chris", member_name: "Maya", circle: "Inner Circle" },
+  { owner_name: "Chris", member_name: "Ana", circle: "Connexions" },
+  { owner_name: "Chris", member_name: "Nora", circle: "Connexions" },
+  { owner_name: "Chris", member_name: "Sam", circle: "Connexions" },
+  { owner_name: "Chris", member_name: "Julien", circle: "Connexions" },
+  { owner_name: "Ana", member_name: "Chris", circle: "Inner Circle" },
+  { owner_name: "Ana", member_name: "Maya", circle: "Connexions" },
+  { owner_name: "Ana", member_name: "Nora", circle: "Connexions" },
+  { owner_name: "Sam", member_name: "Nora", circle: "Inner Circle" },
+  { owner_name: "Sam", member_name: "Chris", circle: "Connexions" },
+  { owner_name: "Julien", member_name: "Nora", circle: "Inner Circle" },
+  { owner_name: "Julien", member_name: "Sam", circle: "Connexions" },
+  { owner_name: "Maya", member_name: "Chris", circle: "Inner Circle" },
+  { owner_name: "Maya", member_name: "Ana", circle: "Connexions" }
+];
+
 function columnExists(tableName, columnName) {
   return db.prepare(`PRAGMA table_info(${tableName})`).all().some((column) => column.name === columnName);
 }
@@ -171,6 +193,55 @@ function normalizeResponseLabel(value) {
 
 function normalizeCircleTone(circle) {
   return normalizeCircle(circle) === "Inner Circle" ? "inner" : "connections";
+}
+
+function ownerHasRelationships(ownerUserId) {
+  return Boolean(db.prepare(`
+    SELECT 1
+    FROM user_relationships
+    WHERE owner_user_id = ?
+    LIMIT 1
+  `).get(ownerUserId));
+}
+
+function getRelationshipCircle(ownerUserId, memberUserId) {
+  if (!ownerUserId || !memberUserId || ownerUserId === memberUserId) {
+    return "Inner Circle";
+  }
+
+  const relationship = db.prepare(`
+    SELECT circle
+    FROM user_relationships
+    WHERE owner_user_id = ? AND member_user_id = ?
+  `).get(ownerUserId, memberUserId);
+
+  if (relationship?.circle) {
+    return normalizeCircle(relationship.circle);
+  }
+
+  if (ownerHasRelationships(ownerUserId)) {
+    return "";
+  }
+
+  const member = getUserById(memberUserId);
+  return member ? normalizeCircle(member.circle) : "";
+}
+
+function canViewerAccessHostCircle(plan, currentUser) {
+  if (!currentUser) {
+    return false;
+  }
+
+  if (!plan.hostUserId) {
+    return getAccessLevel(currentUser.circle) >= getAccessLevel(plan.circle);
+  }
+
+  const relationshipCircle = getRelationshipCircle(plan.hostUserId, currentUser.id);
+  if (!relationshipCircle) {
+    return false;
+  }
+
+  return getAccessLevel(relationshipCircle) >= getAccessLevel(normalizeCircle(plan.circle));
 }
 
 function getVisibilityModeLabel(mode) {
@@ -224,7 +295,7 @@ function canUserSeePlanSummary(plan, currentUser = null) {
     return true;
   }
 
-  return getAccessLevel(currentUser.circle) >= getAccessLevel(plan.circle);
+  return canViewerAccessHostCircle(plan, currentUser);
 }
 
 function getParticipantApprovalStatus(planId, userId) {
@@ -261,7 +332,7 @@ function canUserSeeFullPlanDetail(plan, currentUser = null) {
   }
 
   if (mode === VISIBILITY_MODES.CIRCLE_OPEN) {
-    return getAccessLevel(currentUser.circle) >= getAccessLevel(plan.circle);
+    return canViewerAccessHostCircle(plan, currentUser);
   }
 
   return getParticipantApprovalStatus(plan.id, currentUser.id) === "approved";
@@ -416,6 +487,17 @@ function initializeDatabase() {
       FOREIGN KEY (plan_id) REFERENCES plans(id) ON DELETE CASCADE,
       FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS user_relationships (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      owner_user_id INTEGER NOT NULL,
+      member_user_id INTEGER NOT NULL,
+      circle TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+      UNIQUE(owner_user_id, member_user_id),
+      FOREIGN KEY (owner_user_id) REFERENCES users(id) ON DELETE CASCADE,
+      FOREIGN KEY (member_user_id) REFERENCES users(id) ON DELETE CASCADE
+    );
   `);
 
   ensureColumn("plans", "visibility_mode", "TEXT");
@@ -436,6 +518,35 @@ function initializeDatabase() {
 
   db.prepare("UPDATE users SET is_admin = 1 WHERE name = 'Nora'").run();
   db.prepare("UPDATE users SET is_admin = COALESCE(is_admin, 0)").run();
+
+  const relationshipCount = db.prepare("SELECT COUNT(*) AS count FROM user_relationships").get().count;
+  if (relationshipCount === 0) {
+    const byName = getAllUsersByName();
+    const insertRelationship = db.prepare(`
+      INSERT INTO user_relationships (owner_user_id, member_user_id, circle)
+      VALUES (@owner_user_id, @member_user_id, @circle)
+    `);
+    const insertRelationships = db.transaction((items) => items.forEach((item) => insertRelationship.run(item)));
+    insertRelationships(
+      seedRelationships
+        .map((relationship) => ({
+          owner_user_id: byName[relationship.owner_name],
+          member_user_id: byName[relationship.member_name],
+          circle: normalizeCircle(relationship.circle)
+        }))
+        .filter((relationship) => relationship.owner_user_id && relationship.member_user_id)
+    );
+  }
+
+  const testPlanTitles = [
+    "RSVP first test plan",
+    "Public vibe test plan",
+    "Plan à éditer",
+    "Plan Ã  Ã©diter",
+    "Plan non éditable",
+    "Plan non Ã©ditable"
+  ];
+  db.prepare(`DELETE FROM plans WHERE title IN (${testPlanTitles.map(() => "?").join(", ")})`).run(...testPlanTitles);
 
   const planCount = db.prepare("SELECT COUNT(*) AS count FROM plans").get().count;
   if (planCount === 0) {
@@ -627,7 +738,12 @@ function getUsers() {
 }
 
 function getOverview(filters = {}, currentUser = null) {
-  const presence = getPresenceRows().filter((user) => user.id !== currentUser?.id);
+  const presence = getPresenceRows()
+    .filter((user) => user.id !== currentUser?.id)
+    .map((user) => ({
+      ...user,
+      relationshipCircle: currentUser ? getRelationshipCircle(currentUser.id, user.id) : ""
+    }));
   const plans = getPlanSummaryRows(filters, currentUser);
 
   return {
@@ -840,6 +956,27 @@ function updatePlan(planId, input, currentUser) {
   return getPlanDetail(planId, currentUser);
 }
 
+function deletePlan(planId, currentUser) {
+  const plan = db.prepare(`
+    SELECT
+      id,
+      host_user_id AS hostUserId
+    FROM plans
+    WHERE id = ?
+  `).get(planId);
+
+  if (!plan || !currentUser) {
+    return false;
+  }
+
+  if (plan.hostUserId !== currentUser.id && !currentUser.isAdmin) {
+    return false;
+  }
+
+  const result = db.prepare("DELETE FROM plans WHERE id = ?").run(planId);
+  return result.changes > 0;
+}
+
 function upsertRsvp(planId, userId, response, currentUser = null) {
   const plan = db.prepare(`
     SELECT
@@ -930,6 +1067,7 @@ module.exports = {
   getUserById,
   createPlan,
   updatePlan,
+  deletePlan,
   upsertRsvp,
   approvePlanParticipant
 };

@@ -9,6 +9,7 @@ const {
   getUserById,
   createPlan,
   updatePlan,
+  deletePlan,
   upsertRsvp,
   approvePlanParticipant
 } = require("../server/db");
@@ -58,6 +59,78 @@ test("overview hides inner-circle plans from connexions users", () => {
 
   assert.ok(plans.length > 0);
   assert.ok(plans.every((plan) => !(plan.circle === "Inner Circle" && plan.visibilityMode !== VISIBILITY_MODES.PUBLIC_VIBE)));
+});
+
+test("circle visibility depends on host-viewer relationship, not a global user circle", () => {
+  const ana = getUserById(6);
+  const sam = getUserById(2);
+  const chris = getUserById(5);
+  const plan = createPlan({
+    title: "Ana inner circle only",
+    activity: "Coffee",
+    circle: "Inner Circle",
+    visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
+    hostUserId: ana.id,
+    momentumLabel: "Test",
+    momentumTone: "normal",
+    timeLabel: "Ce soir",
+    durationLabel: "45 min",
+    area: "Plateau",
+    locationDetail: "Spot test",
+    summary: "Visible seulement au Inner Circle de Ana.",
+    addressRule: "Le lieu exact se confirme quand le plan prend forme.",
+    isOnline: false
+  });
+
+  const samView = getPlanDetail(plan.id, sam);
+  const chrisView = getPlanDetail(plan.id, chris);
+
+  assert.equal(samView, null);
+  assert.ok(chrisView);
+  assert.equal(chrisView.detailAccess, "full");
+});
+
+test("a viewer can be inner circle for one host and not for another", () => {
+  const nora = getUserById(1);
+  const ana = getUserById(6);
+  const sam = getUserById(2);
+
+  const noraPlan = createPlan({
+    title: "Nora inner circle only",
+    activity: "Walk",
+    circle: "Inner Circle",
+    visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
+    hostUserId: nora.id,
+    momentumLabel: "Test",
+    momentumTone: "normal",
+    timeLabel: "Maintenant",
+    durationLabel: "1 h",
+    area: "Plateau",
+    locationDetail: "Point Nora",
+    summary: "Sam peut voir ce plan.",
+    addressRule: "Le lieu exact se confirme quand le plan prend forme.",
+    isOnline: false
+  });
+
+  const anaPlan = createPlan({
+    title: "Ana inner circle mismatch",
+    activity: "Walk",
+    circle: "Inner Circle",
+    visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
+    hostUserId: ana.id,
+    momentumLabel: "Test",
+    momentumTone: "normal",
+    timeLabel: "Maintenant",
+    durationLabel: "1 h",
+    area: "Rosemont",
+    locationDetail: "Point Ana",
+    summary: "Sam ne peut pas voir ce plan.",
+    addressRule: "Le lieu exact se confirme quand le plan prend forme.",
+    isOnline: false
+  });
+
+  assert.ok(getPlanDetail(noraPlan.id, sam));
+  assert.equal(getPlanDetail(anaPlan.id, sam), null);
 });
 
 test("admin sees who created each visible plan", () => {
@@ -250,6 +323,55 @@ test("non-host cannot edit someone else's plan", () => {
   }, maya);
 
   assert.equal(updated, null);
+});
+
+test("host can delete their own plan", () => {
+  const chris = getUserById(5);
+  const plan = createPlan({
+    title: "Plan à supprimer",
+    activity: "Walk",
+    circle: "Connexions",
+    visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
+    hostUserId: chris.id,
+    momentumLabel: "Nouveau",
+    momentumTone: "normal",
+    timeLabel: "Ce soir",
+    durationLabel: "45 min",
+    area: "Canal",
+    locationDetail: "Point à supprimer",
+    summary: "Ce plan doit pouvoir être supprimé.",
+    addressRule: "Le lieu exact se confirme quand le plan prend forme.",
+    isOnline: false
+  });
+
+  const deleted = deletePlan(plan.id, chris);
+
+  assert.equal(deleted, true);
+  assert.equal(getPlanDetail(plan.id, chris), null);
+});
+
+test("non-host cannot delete someone else's plan", () => {
+  const chris = getUserById(5);
+  const maya = getUserById(4);
+  const plan = createPlan({
+    title: "Plan protégé",
+    activity: "Coffee",
+    circle: "Connexions",
+    visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
+    hostUserId: chris.id,
+    momentumLabel: "Nouveau",
+    momentumTone: "normal",
+    timeLabel: "Ce soir",
+    durationLabel: "45 min",
+    area: "Plateau",
+    locationDetail: "Point protégé",
+    summary: "Maya ne doit pas pouvoir supprimer ce plan.",
+    addressRule: "Le lieu exact se confirme quand le plan prend forme.",
+    isOnline: false
+  });
+
+  assert.equal(deletePlan(plan.id, maya), false);
+  assert.ok(getPlanDetail(plan.id, chris));
 });
 
 test("plan validator rejects missing area", () => {

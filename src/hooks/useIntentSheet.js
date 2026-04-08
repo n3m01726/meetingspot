@@ -70,7 +70,7 @@ function useIntentSheet(onPlanCreated, currentUser) {
           activity: intent || "Custom",
           title: form.title,
           visibilityMode: form.visibilityMode,
-          circle: selectedAvatar?.circle || currentUser?.circle || "Connexions",
+          circle: selectedAvatar?.relationshipCircle || selectedAvatar?.circle || currentUser?.circle || "Connexions",
           area: form.area,
           venue: form.venue,
           timeLabel: timeLabelMap[form.timeRange] || "Plus tard"

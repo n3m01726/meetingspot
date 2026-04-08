@@ -10,6 +10,7 @@ const {
   getUserById,
   createPlan,
   updatePlan,
+  deletePlan,
   upsertRsvp,
   approvePlanParticipant
 } = require("./db");
@@ -179,6 +180,27 @@ app.put("/api/plans/:id", (request, response) => {
   }
 
   response.json(updatedPlan);
+});
+
+app.delete("/api/plans/:id", (request, response) => {
+  const planId = Number.parseInt(request.params.id, 10);
+  if (!Number.isInteger(planId) || planId <= 0) {
+    response.status(400).json({ error: "Plan invalide" });
+    return;
+  }
+
+  if (!request.currentUser) {
+    response.status(401).json({ error: "Connexion requise." });
+    return;
+  }
+
+  const deleted = deletePlan(planId, request.currentUser);
+  if (!deleted) {
+    response.status(403).json({ error: "Tu ne peux pas supprimer ce plan." });
+    return;
+  }
+
+  response.json({ ok: true, deletedPlanId: planId });
 });
 
 app.post("/api/plans/:id/rsvp", (request, response) => {

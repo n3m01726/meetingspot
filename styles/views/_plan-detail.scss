@@ -124,6 +124,19 @@ button.detail-link-button {
   align-items: center;
   gap: 0.45rem;
   white-space: nowrap;
+
+  &--danger {
+    color: #9a304a;
+    border-color: rgba(154, 48, 74, 0.18);
+    background: rgba(154, 48, 74, 0.05);
+  }
+}
+
+.detail-title-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-wrap: wrap;
 }
 
 .detail-section-copy,
@@ -510,6 +523,10 @@ button.detail-link-button {
 
   .detail-title-row {
     flex-direction: column;
+  }
+
+  .detail-title-actions {
+    width: 100%;
   }
 
   .participant-row {

@@ -1,18 +1,22 @@
+import { VISIBILITY_MODES } from "../constants/ui.js";
+
 function PlanCard({ plan, onOpen }) {
   const toneModifier =
     plan.momentumTone === "hot" ? " plan-card__momentum--hot" : plan.momentumTone === "subtle" ? " plan-card__momentum--subtle" : "";
 
   const visibilityModifier = plan.detailAccess === "locked" ? " plan-card__visibility-tag--locked" : "";
+  const showCircleTag = plan.visibilityMode !== VISIBILITY_MODES.PUBLIC_VIBE;
+  const showMomentumTag = !(plan.visibilityMode === VISIBILITY_MODES.PUBLIC_VIBE && String(plan.momentumLabel).toLowerCase() === "public");
 
   return (
     <article className={`plan-card${plan.featured ? " plan-card--featured" : ""}${plan.muted ? " plan-card--muted" : ""}${plan.detailAccess === "locked" ? " plan-card--locked" : ""}`}>
       <header className="plan-card__header">
-        <span className={`circle-tag ${plan.circleTone}`}>{plan.circle}</span>
+        {showCircleTag ? <span className={`circle-tag ${plan.circleTone}`}>{plan.circle}</span> : null}
         <span className={`plan-card__visibility-tag${visibilityModifier}`}>
           <span>{plan.visibilityModeIcon}</span>
           <span>{plan.visibilityModeLabel}</span>
         </span>
-        <span className={`plan-card__momentum${toneModifier}`}>{plan.momentumLabel}</span>
+        {showMomentumTag ? <span className={`plan-card__momentum${toneModifier}`}>{plan.momentumLabel}</span> : null}
       </header>
 
       <div className="plan-card__content">

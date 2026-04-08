@@ -35,7 +35,7 @@ function IntentSheet({
               {selectedAvatar ? <strong id="intent-sheet-title">{selectedAvatar.name}</strong> : <strong id="intent-sheet-title">Nouveau moment spontané</strong>}
               {selectedAvatar ? (
                 <span className="intent-selected-meta">
-                  {`${selectedAvatar.availabilityLabel || availabilityLabelMap[selectedAvatar.availability]} • ${selectedAvatar.circle}`}
+                  {`${selectedAvatar.availabilityLabel || availabilityLabelMap[selectedAvatar.availability]} • ${selectedAvatar.relationshipCircle || selectedAvatar.circle}`}
                 </span>
               ) : (
                 <span className="intent-selected-meta">Choisis une activité, un mode d’ouverture et un contexte simple.</span>

@@ -4,7 +4,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import AuthSwitcher from "../components/AuthSwitcher.jsx";
 import DetailMeta from "../components/DetailMeta.jsx";
 import StatePanel from "../components/StatePanel.jsx";
-import { toneClassMap, visibilityModeOptions } from "../constants/ui.js";
+import { toneClassMap, visibilityModeOptions, VISIBILITY_MODES } from "../constants/ui.js";
 import { fetchJson } from "../lib/api.js";
 import useAuth from "../hooks/useAuth.js";
 
@@ -109,6 +109,22 @@ function PlanDetailPage() {
     }
   };
 
+  const handleDeletePlan = async () => {
+    const confirmed = window.confirm("Supprimer ce plan ? Cette action est définitive.");
+    if (!confirmed) {
+      return;
+    }
+
+    try {
+      await fetchJson(`/api/plans/${planId}`, {
+        method: "DELETE"
+      });
+      navigate("/");
+    } catch (nextError) {
+      setFeedback(nextError.message);
+    }
+  };
+
   if (error) {
     const label = error.includes("non accessible")
       ? "Tu n’as pas accès à ce plan avec le profil actuellement connecté."
@@ -122,6 +138,8 @@ function PlanDetailPage() {
   }
 
   const isLocked = plan.detailAccess === "locked";
+  const showCircleTag = plan.visibilityMode !== VISIBILITY_MODES.PUBLIC_VIBE;
+  const showMomentumTag = !(plan.visibilityMode === VISIBILITY_MODES.PUBLIC_VIBE && String(plan.momentumLabel).toLowerCase() === "public");
   const authPrompt = auth.currentUser
     ? `Tu réponds actuellement comme ${auth.currentUser.name}.`
     : "Choisis un profil pour réagir au plan et voir ce que cette personne a réellement le droit de consulter.";
@@ -138,27 +156,34 @@ function PlanDetailPage() {
       <main className="detail-page">
         <section className="panel detail-hero">
           <div className="detail-hero-top">
-            <span className={`circle-tag ${plan.circleTone}`}>{plan.circle}</span>
+            {showCircleTag ? <span className={`circle-tag ${plan.circleTone}`}>{plan.circle}</span> : null}
             <span className="plan-card__visibility-tag">
               <span>{plan.visibilityModeIcon}</span>
               <span>{plan.visibilityModeLabel}</span>
             </span>
-            <span className={`momentum-tag ${plan.momentumTone === "hot" ? "hot" : plan.momentumTone === "subtle" ? "subtle" : ""}`}>
-              {plan.momentumLabel}
-            </span>
+            {showMomentumTag ? (
+              <span className={`momentum-tag ${plan.momentumTone === "hot" ? "hot" : plan.momentumTone === "subtle" ? "subtle" : ""}`}>
+                {plan.momentumLabel}
+              </span>
+            ) : null}
           </div>
 
           <p className="detail-kicker">Plan spontané</p>
           <div className="detail-title-row">
             <h2>{plan.title}</h2>
             {plan.isEditable ? (
-              <button className="ghost-button strong detail-title-action" type="button" onClick={() => {
-                setEditForm(buildEditForm(plan));
-                setIsEditing((current) => !current);
-              }}>
-                <PencilLine size={16} />
-                <span>{isEditing ? "Fermer l’édition" : "Modifier ce plan"}</span>
-              </button>
+              <div className="detail-title-actions">
+                <button className="ghost-button strong detail-title-action" type="button" onClick={() => {
+                  setEditForm(buildEditForm(plan));
+                  setIsEditing((current) => !current);
+                }}>
+                  <PencilLine size={16} />
+                  <span>{isEditing ? "Fermer l’édition" : "Modifier ce plan"}</span>
+                </button>
+                <button className="ghost-button strong detail-title-action detail-title-action--danger" type="button" onClick={handleDeletePlan}>
+                  <span>Supprimer ce plan</span>
+                </button>
+              </div>
             ) : null}
           </div>
           <p className="detail-summary">{plan.summary}</p>
