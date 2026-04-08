@@ -1,0 +1,252 @@
+@use "../mixins" as mixins;
+
+.plan-card {
+  position: relative;
+  display: grid;
+  border-radius: var(--radius-card);
+  background: rgba(255, 255, 255, 0.88);
+  border: 1px solid rgba(16, 33, 23, 0.08);
+  overflow: hidden;
+  transition: border-color var(--duration-fast) var(--ease-standard);
+
+  &:hover,
+  &:focus-within {
+    border-color: rgba(16, 33, 23, 0.14);
+  }
+
+  &--featured {
+    border: 3px solid rgba(45, 109, 246, 0.16);
+    border-color: rgba(45, 109, 246, 0.14);
+  }
+
+  &--muted {
+    background: rgba(249, 250, 249, 0.92);
+  }
+
+  &__header,
+  &__content,
+  &__footer {
+    padding-inline: 1rem;
+  }
+
+  &__header {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    flex-wrap: wrap;
+    padding-top: 1rem;
+    padding-bottom: 0.7rem;
+  }
+
+  &__content {
+    padding-bottom: 0.95rem;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.8rem;
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+    border-top: 1px solid rgba(16, 33, 23, 0.08);
+    background: rgba(116, 116, 116, 0.05);
+  }
+
+  &__momentum {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-left: auto;
+    padding: 0.36rem 0.62rem;
+    border-radius: 999px;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #516158;
+    background: var(--chip-surface);
+
+    &--hot {
+      color: #9d3f26;
+      background: rgba(255, 122, 89, 0.16);
+    }
+
+    &--subtle {
+      color: #66736d;
+      background: rgba(148, 160, 155, 0.16);
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 1.12rem;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+  }
+
+  &__visibility-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    padding: 0.3rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.74rem;
+    font-weight: 700;
+    color: #516158;
+    background: rgba(16, 33, 23, 0.05);
+
+    &--locked {
+      color: #8d4d11;
+      background: rgba(255, 213, 92, 0.18);
+    }
+  }
+
+  &__access-note {
+    margin: 0.45rem 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+
+  &__creator {
+    margin: 0.35rem 0 0;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+    line-height: 1.4;
+  }
+
+  &__participants {
+    display: grid;
+    gap: 0.35rem;
+    min-height: 2rem;
+  }
+
+  &__participants-label {
+    font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
+    color: var(--muted);
+  }
+
+  &__participants-avatars {
+    display: flex;
+    align-items: center;
+    min-height: 2rem;
+
+    > * + * {
+      margin-left: -0.45rem;
+    }
+  }
+
+  &__avatar {
+    border: 2px solid rgba(255, 255, 255, 0.96);
+
+    &.fallback {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--text);
+      background: linear-gradient(135deg, rgba(45, 109, 246, 0.16), rgba(27, 163, 109, 0.18));
+    }
+  }
+
+  &__locked-copy {
+    display: grid;
+    gap: 0.2rem;
+
+    strong {
+      font-size: 0.84rem;
+    }
+
+    span {
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.4;
+    }
+  }
+
+  &__cta {
+    min-height: 2.4rem;
+    padding: 0.55rem 0.9rem;
+    border-radius: 999px;
+    border: 1px solid rgba(16, 33, 23, 0.1);
+    background: rgba(16, 33, 23, 0.03);
+    color: var(--text);
+    font-size: 0.84rem;
+    font-weight: 700;
+    white-space: nowrap;
+
+    &:hover,
+    &:focus-visible {
+      border-color: rgba(16, 33, 23, 0.18);
+      background: rgba(16, 33, 23, 0.05);
+    }
+  }
+
+  &--locked {
+    .plan-card__footer {
+      align-items: flex-end;
+    }
+  }
+}
+
+@include mixins.down-md {
+  .plans-panel {
+    .plan-card {
+      &__participants-label {
+        display: none;
+      }
+    }
+  }
+}
+
+@include mixins.down-sm {
+  .plans-panel {
+    .plan-card {
+      &__header,
+      &__content,
+      &__footer {
+        padding-inline: 0.9rem;
+      }
+
+      &__header {
+        padding-top: 0.9rem;
+        padding-bottom: 0.65rem;
+      }
+
+      &__content {
+        padding-bottom: 0.75rem;
+      }
+
+      &__title {
+        font-size: 1.05rem;
+      }
+
+      &__footer {
+        flex-direction: column;
+        align-items: stretch;
+      }
+
+      &--locked {
+        .plan-card__footer {
+          align-items: stretch;
+        }
+      }
+
+      &__participants {
+        min-height: 0;
+      }
+
+      &__participants-avatars {
+        min-height: 0;
+      }
+
+      &__cta {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+}

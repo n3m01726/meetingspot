@@ -1,0 +1,208 @@
+@use "../mixins" as mixins;
+
+.avatar-strip {
+  position: relative;
+  display: flex;
+  gap: 0.9rem;
+  overflow-x: auto;
+  padding: 10px;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  border-radius: 20px;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.avatar-chip {
+  flex: 0 0 6.1rem;
+  display: grid;
+  justify-items: center;
+  gap: 0.42rem;
+  text-align: center;
+  padding: 0.55rem 0.35rem 0.35rem;
+  border-radius: 1.5rem;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.86), rgba(248, 250, 248, 0.72));
+  border: 1px solid rgba(16, 33, 23, 0.05);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-standard),
+    background var(--duration-fast) var(--ease-standard);
+
+  &:hover,
+  &:focus-visible,
+  &.is-selected {
+    border-color: rgba(45, 109, 246, 0.18);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgba(45, 109, 246, 0.18);
+    outline-offset: 2px;
+  }
+
+  strong {
+    font-size: 0.92rem;
+    line-height: 1.1;
+  }
+
+  span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 1.5rem;
+    padding: 0.16rem 0.55rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: #516158;
+    background: var(--chip-surface);
+  }
+
+  &.is-down span {
+    color: #12714a;
+    background: rgba(27, 163, 109, 0.13);
+  }
+
+  &.is-probable span {
+    color: #8a6600;
+    background: rgba(255, 213, 92, 0.24);
+  }
+
+  &.is-maybe span {
+    color: #66736d;
+    background: rgba(148, 160, 155, 0.16);
+  }
+
+  &:hover .avatar-ring,
+  &:focus-visible .avatar-ring,
+  &.is-selected .avatar-ring {
+    transform: scale(1.03);
+  }
+
+  &.is-seen {
+    .avatar-ring {
+      filter: saturate(0.72);
+
+      &.ring-blue {
+        background: linear-gradient(135deg, #a6bde9, #d5e3f8);
+      }
+
+      &.ring-green {
+        background: linear-gradient(135deg, #9bc8b4, #d3ebe0);
+      }
+
+      &.ring-yellow {
+        background: linear-gradient(135deg, #d7c89c, #eee4c6);
+      }
+
+      &.ring-gray {
+        background: linear-gradient(135deg, #b5bcba, #dde1df);
+      }
+    }
+  }
+
+  &.is-down,
+  &.is-probable,
+  &.is-maybe {
+    .avatar-ring::before {
+      content: "";
+      position: absolute;
+      right: 4px;
+      bottom: 4px;
+      width: 0.92rem;
+      height: 0.92rem;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.95);
+      z-index: 2;
+    }
+  }
+
+  &.is-down .avatar-ring::before {
+    background: linear-gradient(135deg, #14a765, #5fe39c);
+  }
+
+  &.is-probable .avatar-ring::before {
+    background: linear-gradient(135deg, #e0a300, #ffd45a);
+  }
+
+  &.is-maybe .avatar-ring::before {
+    background: linear-gradient(135deg, #909a96, #c4cbc8);
+  }
+}
+
+.avatar-ring {
+  position: relative;
+  padding: 4px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, rgba(16, 33, 23, 0.18), rgba(16, 33, 23, 0.05));
+  transition:
+    transform var(--duration-fast) var(--ease-snappy),
+    filter var(--duration-fast) var(--ease-standard);
+
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 1px;
+    border-radius: 50%;
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 44%);
+    pointer-events: none;
+  }
+}
+
+.avatar-photo {
+  --avatar-size: 4.7rem;
+  display: block;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
+  object-fit: cover;
+  border-radius: 50%;
+  background: white;
+  border: 2px solid rgba(255, 255, 255, 0.92);
+
+  &--xl {
+    --avatar-size: 4.7rem;
+  }
+
+  &--md {
+    --avatar-size: 3rem;
+  }
+
+  &--sm {
+    --avatar-size: 2rem;
+  }
+}
+
+.ring-blue {
+  background: linear-gradient(135deg, #2d6df6, #6ac5ff);
+}
+
+.ring-green {
+  background: linear-gradient(135deg, #13a66a, #76e2a6);
+}
+
+.ring-yellow {
+  background: linear-gradient(135deg, #d8a900, #ffd55c);
+}
+
+.ring-gray {
+  background: linear-gradient(135deg, #909a96, #d4dad7);
+}
+
+@include mixins.down-md {
+  .avatar-strip {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+@include mixins.down-sm {
+  .avatar-strip {
+    gap: 0.75rem;
+    padding-inline: 0.05rem;
+  }
+
+  .avatar-chip {
+    flex-basis: 5.5rem;
+    border-radius: 1.3rem;
+  }
+}
