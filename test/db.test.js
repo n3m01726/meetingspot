@@ -228,6 +228,42 @@ test("rsvp first keeps detail locked until host approval", () => {
   assert.equal(unlockedDetail.currentUserApprovalStatus, "approved");
 });
 
+test("passing on a plan removes the participant instead of changing the RSVP status", () => {
+  const nora = getUserById(1);
+  const sam = getUserById(6);
+  const plan = createPlan({
+    title: "Plan pour tester je passe",
+    activity: "Coffee",
+    circle: "Connexions",
+    visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
+    hostUserId: nora.id,
+    momentumLabel: "Test",
+    momentumTone: "normal",
+    timeLabel: "Ce soir",
+    durationLabel: "30 min",
+    area: "Plateau",
+    locationDetail: "Spot test",
+    summary: "Plan pour tester le retrait de RSVP.",
+    addressRule: "Le lieu exact est visible pour les personnes qui voient le plan.",
+    isOnline: false
+  });
+
+  assert.ok(plan);
+
+  const joined = upsertRsvp(plan.id, sam.id, "down", sam);
+  assert.ok(joined);
+
+  const before = getPlanDetail(plan.id, nora);
+  assert.ok(before.participants.some((participant) => participant.id === sam.id));
+
+  const updated = upsertRsvp(plan.id, sam.id, "pass", sam);
+  assert.ok(updated);
+  assert.ok(!updated.participants.some((participant) => participant.id === sam.id));
+
+  const hostView = getPlanDetail(plan.id, nora);
+  assert.ok(!hostView.participants.some((participant) => participant.id === sam.id));
+});
+
 test("public vibe exposes full detail beyond the base circle", () => {
   const nora = getUserById(1);
   const maya = getUserById(4);
@@ -419,6 +455,17 @@ test("rsvp validator accepts expected values", () => {
   assert.equal(result.ok, true);
   assert.equal(result.value.userId, 1);
   assert.equal(result.value.response, "down");
+});
+
+test("rsvp validator accepts pass for RSVP removal", () => {
+  const result = validateRsvpPayload({
+    userId: 1,
+    response: "pass"
+  });
+
+  assert.equal(result.ok, true);
+  assert.equal(result.value.userId, 1);
+  assert.equal(result.value.response, "pass");
 });
 
 test("approval validator accepts participant ids", () => {

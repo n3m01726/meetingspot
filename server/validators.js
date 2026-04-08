@@ -97,7 +97,7 @@ function validateRsvpPayload(payload) {
   const userId = Number.parseInt(payload.userId, 10);
   const response = asTrimmedString(payload.response, 20);
 
-  if (!["down", "maybe", "probable"].includes(response)) {
+  if (!["down", "maybe", "probable", "pass"].includes(response)) {
     return { ok: false, error: "Réponse invalide." };
   }
 

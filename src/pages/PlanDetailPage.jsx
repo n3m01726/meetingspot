@@ -66,6 +66,10 @@ function PlanDetailPage() {
       });
       setPlan(updatedPlan);
       setEditForm(buildEditForm(updatedPlan));
+      if (response === "pass") {
+        setFeedback("Tu ne fais plus partie de ce plan.");
+        return;
+      }
       setFeedback(
         updatedPlan.detailAccess === "locked"
           ? "Réponse enregistrée. L’hôte doit encore approuver l’accès complet."
@@ -312,7 +316,7 @@ function PlanDetailPage() {
           <div className="detail-actions">
             <button className="primary-action" type="button" onClick={() => handleRsvp("down")}>Je suis dispo</button>
             <button className="secondary" type="button" onClick={() => handleRsvp("maybe")}>Peut-être</button>
-            <button className="ghost" type="button" onClick={() => handleRsvp("probable")}>Je passe</button>
+            <button className="ghost" type="button" onClick={() => handleRsvp("pass")}>Je passe</button>
           </div>
 
           {feedback ? <p className="detail-feedback">{feedback}</p> : null}
