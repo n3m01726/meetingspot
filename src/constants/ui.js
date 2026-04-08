@@ -36,7 +36,7 @@ export const intentOptions = [
 
 export const quickFilters = [
   { key: "all", label: "Tous" },
-  { key: "now", label: "Now" },
+  { key: "now", label: "Maintenant" },
   { key: "tonight", label: "Ce soir" },
   { key: "online", label: "En ligne" }
 ];

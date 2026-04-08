@@ -84,11 +84,33 @@ button.detail-link-button {
   }
 }
 
+.detail-kicker {
+  margin: 0 0 0.55rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .detail-summary {
   margin: 0 0 1rem;
   color: var(--muted);
   line-height: 1.6;
   max-width: 54ch;
+}
+
+.detail-section-copy,
+.detail-empty,
+.detail-feedback {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.detail-feedback {
+  color: var(--text);
+  font-weight: 600;
 }
 
 .detail-meta {
@@ -99,15 +121,15 @@ button.detail-link-button {
   }
 
   &-card {
-  padding: 0.95rem 1rem;
-  border-radius: var(--radius-soft-card);
-  background: var(--surface-soft);
-  border: 1px solid var(--border-soft);
-  transition: border-color var(--duration-fast) var(--ease-standard);
+    padding: 0.95rem 1rem;
+    border-radius: var(--radius-soft-card);
+    background: var(--surface-soft);
+    border: 1px solid var(--border-soft);
+    transition: border-color var(--duration-fast) var(--ease-standard);
 
-  &:hover {
-    border-color: rgba(45, 109, 246, 0.12);
-  }
+    &:hover {
+      border-color: rgba(45, 109, 246, 0.12);
+    }
 
     strong {
       display: block;
@@ -151,6 +173,11 @@ button.detail-link-button {
   .primary-action {
     width: 100%;
   }
+}
+
+.detail-response-card {
+  display: grid;
+  gap: 0.95rem;
 }
 
 .participants-card,
@@ -208,6 +235,7 @@ button.detail-link-button {
     margin: 0;
     color: var(--muted);
     font-size: 0.88rem;
+    line-height: 1.45;
   }
 }
 

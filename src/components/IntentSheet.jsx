@@ -87,7 +87,7 @@ function IntentSheet({
             <legend>Quand ?</legend>
             <div className="intent-time-options">
               {[
-                ["now", "Now"],
+                ["now", "Maintenant"],
                 ["in-30", "Dans 30 min"],
                 ["tonight", "Ce soir"],
                 ["custom", "Plus tard"]

@@ -20,6 +20,7 @@ function PlanDetailPage() {
     const loadData = async () => {
       try {
         setError("");
+        setFeedback("");
         const nextPlan = await fetchJson(`/api/plans/${planId}`);
         setPlan(nextPlan);
       } catch (nextError) {
@@ -43,19 +44,27 @@ function PlanDetailPage() {
         body: JSON.stringify({ response })
       });
       setPlan(updatedPlan);
-      setFeedback("Réponse enregistrée.");
+      setFeedback("Réponse enregistrée. Le plan vient d’être mis à jour.");
     } catch (nextError) {
       setFeedback(nextError.message);
     }
   };
 
   if (error) {
-    return <StatePanel label={`Impossible de charger le plan: ${error}`} />;
+    const label = error.includes("non accessible")
+      ? "Tu n’as pas accès à ce plan avec le profil actuellement connecté."
+      : `Impossible de charger le plan: ${error}`;
+
+    return <StatePanel label={label} />;
   }
 
   if (!plan) {
     return <StatePanel label="Chargement du plan..." />;
   }
+
+  const authPrompt = auth.currentUser
+    ? `Tu réponds actuellement comme ${auth.currentUser.name}.`
+    : "Choisis un profil pour réagir au plan et voir ce que cette personne a réellement le droit de consulter.";
 
   return (
     <div className="detail-shell">
@@ -70,46 +79,52 @@ function PlanDetailPage() {
         <section className="panel detail-hero">
           <div className="detail-hero-top">
             <span className={`circle-tag ${plan.circleTone}`}>{plan.circle}</span>
-            <span className={`momentum-tag ${plan.momentumTone === "hot" ? "hot" : plan.momentumTone === "subtle" ? "subtle" : ""}`}>{plan.momentumLabel}</span>
+            <span className={`momentum-tag ${plan.momentumTone === "hot" ? "hot" : plan.momentumTone === "subtle" ? "subtle" : ""}`}>
+              {plan.momentumLabel}
+            </span>
           </div>
 
+          <p className="detail-kicker">Plan spontané</p>
           <h2>{plan.title}</h2>
           <p className="detail-summary">{plan.summary}</p>
 
           <div className="detail-meta-grid">
             <DetailMeta
               icon={<Sparkles size={16} />}
-              label="Heure approximative"
+              label="Quand"
               value={plan.timeLabel}
-              copy={`Fenêtre souple de ${plan.durationLabel}. On part dès que 2-3 personnes sont là.`}
+              copy={`Fenêtre souple de ${plan.durationLabel}. On bouge dès que 2 à 3 personnes sont vraiment partantes.`}
             />
             <DetailMeta
               icon={<MapPinned size={16} />}
-              label="Lieu"
+              label="Où"
               value={plan.locationDetail}
               copy={plan.addressRule}
             />
             <DetailMeta
               icon={<Users size={16} />}
-              label="Participants"
+              label="Qui a répondu"
               value={`${plan.confirmedCount} confirmés • ${plan.interestedCount} intéressés`}
-              copy={`${plan.circle} voit le contexte du plan.`}
+              copy={`${plan.circle} voit le contexte de ce plan.`}
             />
             <DetailMeta
               icon={<ShieldCheck size={16} />}
               label="Visibilité"
               value={plan.visibility}
-              copy="Les détails sensibles restent cachés tant que la présence n'est pas confirmée."
+              copy="Les détails sensibles restent masqués tant que la présence n'est pas confirmée."
             />
           </div>
         </section>
 
-        <section className="panel">
+        <section className="panel detail-response-card">
           <div className="section-heading compact">
             <div>
-              <p className="eyebrow">Répondre au plan</p>
+              <p className="eyebrow">Répondre</p>
+              <h3>Est-ce que tu embarques ?</h3>
             </div>
           </div>
+
+          <p className="detail-section-copy">{authPrompt}</p>
 
           <AuthSwitcher
             currentUser={auth.currentUser || null}
@@ -129,36 +144,41 @@ function PlanDetailPage() {
             <button className="secondary" type="button" onClick={() => handleRsvp("maybe")}>Peut-être</button>
             <button className="ghost" type="button" onClick={() => handleRsvp("probable")}>Je passe</button>
           </div>
-          {feedback ? <p className="eyebrow">{feedback}</p> : null}
+
+          {feedback ? <p className="detail-feedback">{feedback}</p> : null}
         </section>
 
         <section className="panel participants-card">
           <div className="participants-header">
             <div>
               <p className="eyebrow">Participants</p>
-              <h3>Qui est déjà dedans</h3>
+              <h3>Qui est déjà dans la boucle</h3>
             </div>
           </div>
 
-          <div className="participants-inline">
-            {plan.participants.map((participant) => (
-              <article className="participant-row" key={participant.id}>
-                <img className="avatar-photo" src={participant.imagePath} alt={participant.name} />
-                <div>
-                  <strong>{participant.name}</strong>
-                  <p>{participant.note || participant.responseLabel}</p>
-                </div>
-                <span className={`participant-state ${participant.response}`}>{participant.responseLabel}</span>
-              </article>
-            ))}
-          </div>
+          {plan.participants.length > 0 ? (
+            <div className="participants-inline">
+              {plan.participants.map((participant) => (
+                <article className="participant-row" key={participant.id}>
+                  <img className="avatar-photo avatar-photo--md" src={participant.imagePath} alt={participant.name} />
+                  <div>
+                    <strong>{participant.name}</strong>
+                    <p>{participant.note || participant.responseLabel}</p>
+                  </div>
+                  <span className={`participant-state ${participant.response}`}>{participant.responseLabel}</span>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="detail-empty">Aucune réponse pour l’instant.</p>
+          )}
         </section>
 
         <section className="panel visibility-card-large">
           <div className="section-heading compact">
             <div>
-              <p className="eyebrow">Qui voit quoi</p>
-              <h3></h3>
+              <p className="eyebrow">Visibilité</p>
+              <h3>Qui voit quoi</h3>
             </div>
           </div>
 
@@ -175,24 +195,29 @@ function PlanDetailPage() {
         <section className="panel checkins-card">
           <div className="checkins-header">
             <div>
-              <p className="eyebrow">Le Loop</p>
+              <p className="eyebrow">Le loop</p>
+              <h3>Derniers signaux du plan</h3>
             </div>
           </div>
 
-          <div className="checkins-list">
-            {plan.checkins.map((checkin) => (
-              <article className="checkin-item" key={checkin.id}>
-                <span className={`checkin-dot ${toneClassMap[checkin.tone] || ""}`}></span>
-                <div>
-                  <span className="checkin-meta">
-                    <MessageCircleMore size={16} />
-                    <span>{checkin.name} • il y a {checkin.minutesAgo} min</span>
-                  </span>
-                  <p>{checkin.message}</p>
-                </div>
-              </article>
-            ))}
-          </div>
+          {plan.checkins.length > 0 ? (
+            <div className="checkins-list">
+              {plan.checkins.map((checkin) => (
+                <article className="checkin-item" key={checkin.id}>
+                  <span className={`checkin-dot ${toneClassMap[checkin.tone] || ""}`}></span>
+                  <div>
+                    <span className="checkin-meta">
+                      <MessageCircleMore size={16} />
+                      <span>{checkin.name} • il y a {checkin.minutesAgo} min</span>
+                    </span>
+                    <p>{checkin.message}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          ) : (
+            <p className="detail-empty">Pas encore de check-in sur ce plan.</p>
+          )}
         </section>
       </main>
     </div>
