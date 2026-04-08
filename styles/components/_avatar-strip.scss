@@ -151,13 +151,26 @@
 }
 
 .avatar-photo {
+  --avatar-size: 4.7rem;
   display: block;
-  width: 4.7rem;
-  height: 4.7rem;
+  width: var(--avatar-size);
+  height: var(--avatar-size);
   object-fit: cover;
   border-radius: 50%;
   background: white;
   border: 2px solid rgba(255, 255, 255, 0.92);
+
+  &--xl {
+    --avatar-size: 4.7rem;
+  }
+
+  &--md {
+    --avatar-size: 3rem;
+  }
+
+  &--sm {
+    --avatar-size: 2rem;
+  }
 }
 
 .ring-blue {

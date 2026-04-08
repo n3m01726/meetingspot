@@ -1,6 +1,7 @@
 import { availabilityLabelMap, intentOptions } from "../constants/ui.js";
 
 function IntentSheet({
+  isOpen,
   selectedAvatar,
   intentStep,
   form,
@@ -11,8 +12,6 @@ function IntentSheet({
   onBack,
   onSubmit
 }) {
-  const isOpen = Boolean(selectedAvatar);
-
   return (
     <section className={`intent-sheet-overlay ${isOpen ? "is-open" : ""}`} aria-hidden={!isOpen}>
       <button className="intent-sheet-backdrop" type="button" aria-label="Fermer la feuille" onClick={onClose}></button>
@@ -20,15 +19,25 @@ function IntentSheet({
         <div className="intent-sheet-handle" aria-hidden="true"></div>
         <div className="intent-sheet-header">
           <div className="intent-selected-avatar">
-            <div className="intent-selected-ring">
-              {selectedAvatar ? <img className="intent-selected-image" src={selectedAvatar.imagePath} alt={selectedAvatar.name} /> : null}
-            </div>
+            {selectedAvatar ? (
+              <div className="intent-selected-ring">
+                <img
+                  className="intent-selected-image avatar-photo avatar-photo--md"
+                  src={selectedAvatar.imagePath}
+                  alt={selectedAvatar.name}
+                />
+              </div>
+            ) : null}
             <div className="intent-selected-copy">
-              <span className="intent-sheet-title">Créer un plan avec </span>
-              <span id="intent-sheet-title">{selectedAvatar?.name || "Ami sélectionné"}</span>
-              <span className="intent-selected-meta">
-                {selectedAvatar ? `${selectedAvatar.availabilityLabel || availabilityLabelMap[selectedAvatar.availability]} • ${selectedAvatar.circle}` : ""}
+              <span className="intent-sheet-title">
+                {selectedAvatar ? "Créer un plan avec " : ""}
               </span>
+              {selectedAvatar ? <span id="intent-sheet-title">{selectedAvatar.name}</span> : <span id="intent-sheet-title"></span>}
+              {selectedAvatar ? (
+                <span className="intent-selected-meta">
+                  {`${selectedAvatar.availabilityLabel || availabilityLabelMap[selectedAvatar.availability]} • ${selectedAvatar.circle}`}
+                </span>
+              ) : null}
             </div>
           </div>
         </div>
@@ -54,12 +63,14 @@ function IntentSheet({
             <span className="intent-error" aria-live="polite"></span>
           </div>
 
-          <div className="intent-field intent-person-row">
-            <div className="intent-person-chip">
-              {selectedAvatar ? <img className="intent-form-avatar" src={selectedAvatar.imagePath} alt={selectedAvatar.name} /> : null}
-              <span className="intent-participant-name">{selectedAvatar?.name || ""}</span>
+          {selectedAvatar ? (
+            <div className="intent-field intent-person-row">
+              <div className="intent-person-chip">
+                <img className="avatar-photo avatar-photo--md" src={selectedAvatar.imagePath} alt={selectedAvatar.name} />
+                <span className="intent-participant-name">{selectedAvatar.name}</span>
+              </div>
             </div>
-          </div>
+          ) : null}
 
           <div className="intent-field">
             <label>Visibilité</label>

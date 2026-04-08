@@ -48,12 +48,35 @@ test("visibility filter returns only matching visibility", () => {
   assert.ok(plans.every((plan) => plan.visibility === "Connexions"));
 });
 
+test("overview hides inner-circle plans from connexions users", () => {
+  const maya = getUserById(4);
+  const plans = getPlanSummaryRows({}, maya);
+
+  assert.ok(plans.length > 0);
+  assert.ok(plans.every((plan) => plan.circle !== "Inner Circle"));
+});
+
+test("overview presence excludes the current user", () => {
+  const chris = getUserById(5);
+  const overview = getOverview({}, chris);
+
+  assert.ok(overview.presence.length > 0);
+  assert.ok(overview.presence.every((user) => user.id !== chris.id));
+});
+
 test("plan detail exposes participants and checkins", () => {
   const detail = getPlanDetail(1);
 
   assert.ok(detail);
   assert.ok(detail.participants.length > 0);
   assert.ok(detail.checkins.length > 0);
+});
+
+test("plan detail is blocked when user lacks circle access", () => {
+  const maya = getUserById(4);
+  const detail = getPlanDetail(1, maya);
+
+  assert.equal(detail, null);
 });
 
 test("plan validator rejects missing area", () => {

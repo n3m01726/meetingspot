@@ -49,15 +49,35 @@
   border: 1px solid var(--line-subtle);
   background: rgba(255, 255, 255, 0.72);
   color: #53625a;
+  transition:
+    background-color var(--duration-fast) var(--ease-standard),
+    border-color var(--duration-fast) var(--ease-standard),
+    color var(--duration-fast) var(--ease-standard);
+
+  &.active {
+    color: white;
+    border-color: transparent;
+    background: linear-gradient(135deg, var(--text), #243a2e);
+  }
 
   &.inner {
     color: var(--inner);
     background: var(--inner-soft);
+
+    &.active {
+      color: white;
+      background: linear-gradient(135deg, var(--inner), #2f7cc6);
+    }
   }
 
   &.connections {
     color: var(--connections);
     background: var(--connections-soft);
+
+    &.active {
+      color: white;
+      background: linear-gradient(135deg, var(--connections), #1f6d59);
+    }
   }
 
   &.passive {

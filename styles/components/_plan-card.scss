@@ -84,24 +84,30 @@
   }
 
   &__participants {
-    display: flex;
-    align-items: center;
+    display: grid;
+    gap: 0.35rem;
     min-height: 2rem;
   }
 
   &__participants-label {
-    margin-right: 0.75rem;
     font-size: 0.75rem;
+    font-weight: 700;
+    line-height: 1;
     color: var(--muted);
   }
 
+  &__participants-avatars {
+    display: flex;
+    align-items: center;
+    min-height: 2rem;
+
+    > * + * {
+      margin-left: -0.45rem;
+    }
+  }
+
   &__avatar {
-    width: 2rem;
-    height: 2rem;
-    object-fit: cover;
-    border-radius: 50%;
     border: 2px solid rgba(255, 255, 255, 0.96);
-    background: white;
 
     &.fallback {
       display: inline-flex;
@@ -112,10 +118,6 @@
       color: var(--text);
       background: linear-gradient(135deg, rgba(45, 109, 246, 0.16), rgba(27, 163, 109, 0.18));
     }
-  }
-
-  &__participants > * + * {
-    margin-left: -0.45rem;
   }
 
   &__cta {
@@ -133,6 +135,16 @@
     &:focus-visible {
       border-color: rgba(16, 33, 23, 0.18);
       background: rgba(16, 33, 23, 0.05);
+    }
+  }
+}
+
+@include mixins.down-md {
+  .plans-panel {
+    .plan-card {
+      &__participants-label {
+        display: none;
+      }
     }
   }
 }
@@ -165,6 +177,10 @@
       }
 
       &__participants {
+        min-height: 0;
+      }
+
+      &__participants-avatars {
         min-height: 0;
       }
 

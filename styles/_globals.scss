@@ -230,7 +230,7 @@
   justify-items: end;
   opacity: 0;
   pointer-events: none;
-  transition: opacity var(--duration-fast) var(--ease-standard);
+  transition: opacity var(--duration-medium) var(--ease-standard);
   z-index: 25;
 
   &:target {
@@ -239,6 +239,7 @@
 
     .drawer-card {
       transform: translateX(0);
+      opacity: 1;
     }
   }
 }
@@ -284,8 +285,11 @@
   padding: 1.2rem;
   background: rgba(255, 255, 255, 0.96);
   border-left: 1px solid var(--line-subtle);
-  transform: translateX(24px);
-  transition: transform var(--duration-medium) var(--ease-standard);
+  opacity: 0;
+  transform: translateX(16px);
+  transition:
+    opacity var(--duration-medium) var(--ease-standard),
+    transform var(--duration-medium) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .drawer-header,
@@ -341,8 +345,8 @@
 
 .floating-cta {
   position: fixed;
-  right: 1rem;
-  bottom: 1rem;
+  right: 2rem;
+  bottom: 2rem;
   z-index: 10;
   padding-inline: 1.2rem;
 }

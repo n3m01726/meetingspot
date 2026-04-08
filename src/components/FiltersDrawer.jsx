@@ -1,4 +1,4 @@
-import { circleFilters, quickFilters, visibilityFilters } from "../constants/ui.js";
+import { quickFilters, visibilityFilters } from "../constants/ui.js";
 
 function FiltersDrawer({ filters, onFiltersChange }) {
   return (
@@ -10,7 +10,9 @@ function FiltersDrawer({ filters, onFiltersChange }) {
             <p className="eyebrow">Plans spontanés</p>
             <h3>Filtres et visibilité</h3>
           </div>
-          <a className="drawer-close" href="#plans" aria-label="Fermer le panneau">Fermer</a>
+          <a className="drawer-close" href="#plans" aria-label="Fermer le panneau">
+            Fermer
+          </a>
         </div>
 
         <section className="drawer-section">
@@ -30,29 +32,13 @@ function FiltersDrawer({ filters, onFiltersChange }) {
         </section>
 
         <section className="drawer-section">
-          <p className="drawer-label">Cercles</p>
-          <div className="audience-filters" aria-label="Filtres de visibilité">
-            {circleFilters.map((filter) => (
-              <button
-                key={filter.key}
-                type="button"
-                className={`audience-chip ${filter.key === "Inner Circle" ? "inner" : filter.key === "Connexions" ? "connections" : ""} ${filters.circle === filter.key ? "active" : ""}`}
-                onClick={() => onFiltersChange({ ...filters, circle: filter.key })}
-              >
-                {filter.label}
-              </button>
-            ))}
-          </div>
-        </section>
-
-        <section className="drawer-section">
-          <p className="drawer-label">Visibilité des plans</p>
+          <p className="drawer-label">Plans uniquement visibles par ces cercles</p>
           <div className="audience-filters" aria-label="Filtres de visibilité des plans">
             {visibilityFilters.map((filter) => (
               <button
                 key={filter.key}
                 type="button"
-                className={`audience-chip ${filters.visibility === filter.key ? "active" : ""}`}
+                className={`audience-chip ${filter.tone || ""} ${filters.visibility === filter.key ? "active" : ""}`}
                 onClick={() => onFiltersChange({ ...filters, visibility: filter.key })}
               >
                 {filter.label}

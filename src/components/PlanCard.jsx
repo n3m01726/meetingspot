@@ -15,14 +15,21 @@ function PlanCard({ plan, onOpen }) {
 
       <footer className="plan-card__footer">
         <div className="plan-card__participants" aria-label="Participants">
-          <span className="plan-card__participants-label">Ils ont réagi à ce plan :</span>
-          {plan.participants.slice(0, 4).map((participant) => (
-            <img className="plan-card__avatar" src={participant.imagePath} alt={participant.name} key={participant.id} />
-          ))}
+          <span className="plan-card__participants-label">Réactions</span>
+          <div className="plan-card__participants-avatars">
+            {plan.participants.slice(0, 4).map((participant) => (
+              <img
+                className="plan-card__avatar avatar-photo avatar-photo--sm"
+                src={participant.imagePath}
+                alt={participant.name}
+                key={participant.id}
+              />
+            ))}
+          </div>
         </div>
 
         <button className="plan-card__cta" type="button" onClick={onOpen}>
-          <span>Voir les details</span>
+          <span>Voir les détails</span>
         </button>
       </footer>
     </article>

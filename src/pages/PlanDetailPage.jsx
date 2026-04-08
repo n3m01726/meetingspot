@@ -77,10 +77,30 @@ function PlanDetailPage() {
           <p className="detail-summary">{plan.summary}</p>
 
           <div className="detail-meta-grid">
-            <DetailMeta icon={<Sparkles size={16} />} label="Heure approximative" value={plan.timeLabel} copy={`Fenêtre souple de ${plan.durationLabel}. On part dès que 2-3 personnes sont là.`} />
-            <DetailMeta icon={<MapPinned size={16} />} label="Lieu" value={plan.locationDetail} copy={plan.addressRule} />
-            <DetailMeta icon={<Users size={16} />} label="Participants" value={`${plan.confirmedCount} confirmés • ${plan.interestedCount} intéressés`} copy={`${plan.circle} voit le contexte du plan.`} />
-            <DetailMeta icon={<ShieldCheck size={16} />} label="Visibilité" value={plan.visibility} copy="Les détails sensibles restent cachés tant que la présence n'est pas confirmée." />
+            <DetailMeta
+              icon={<Sparkles size={16} />}
+              label="Heure approximative"
+              value={plan.timeLabel}
+              copy={`Fenêtre souple de ${plan.durationLabel}. On part dès que 2-3 personnes sont là.`}
+            />
+            <DetailMeta
+              icon={<MapPinned size={16} />}
+              label="Lieu"
+              value={plan.locationDetail}
+              copy={plan.addressRule}
+            />
+            <DetailMeta
+              icon={<Users size={16} />}
+              label="Participants"
+              value={`${plan.confirmedCount} confirmés • ${plan.interestedCount} intéressés`}
+              copy={`${plan.circle} voit le contexte du plan.`}
+            />
+            <DetailMeta
+              icon={<ShieldCheck size={16} />}
+              label="Visibilité"
+              value={plan.visibility}
+              copy="Les détails sensibles restent cachés tant que la présence n'est pas confirmée."
+            />
           </div>
         </section>
 
@@ -123,7 +143,7 @@ function PlanDetailPage() {
           <div className="participants-inline">
             {plan.participants.map((participant) => (
               <article className="participant-row" key={participant.id}>
-                <img className="participant-avatar" src={participant.imagePath} alt={participant.name} />
+                <img className="avatar-photo" src={participant.imagePath} alt={participant.name} />
                 <div>
                   <strong>{participant.name}</strong>
                   <p>{participant.note || participant.responseLabel}</p>
@@ -137,8 +157,8 @@ function PlanDetailPage() {
         <section className="panel visibility-card-large">
           <div className="section-heading compact">
             <div>
-              <p className="eyebrow">Visibilité</p>
-              <h3>Qui voit quoi</h3>
+              <p className="eyebrow">Qui voit quoi</p>
+              <h3></h3>
             </div>
           </div>
 
@@ -155,8 +175,7 @@ function PlanDetailPage() {
         <section className="panel checkins-card">
           <div className="checkins-header">
             <div>
-              <p className="eyebrow">Check-ins légers</p>
-              <h3>Le plan bouge comment</h3>
+              <p className="eyebrow">Le Loop</p>
             </div>
           </div>
 

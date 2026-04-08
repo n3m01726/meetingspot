@@ -1,4 +1,4 @@
-import { Menu, Plus, SlidersHorizontal, Sparkles, Users } from "lucide-react";
+﻿import { Menu, Plus, SlidersHorizontal, Sparkles, Users } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { availabilityLabelMap, availabilityToneMap, quickFilters } from "../constants/ui.js";
 import AuthSwitcher from "../components/AuthSwitcher.jsx";
@@ -48,14 +48,14 @@ function HomePage() {
               <span className="brand-mark">MS</span>
               <div>
                 <h1>meetingspot</h1>
-                <p className="eyebrow-title">Spontanéité sociale</p>
+                <p className="eyebrow-title">SpontanÃ©itÃ© sociale</p>
               </div>
             </div>
             <div className="topbar-meta">
               <div className="inline-stats" aria-label="Statistiques globales">
                 <StatItem value={overview.stats.availableNow} label="personnes dispo dans l'heure" />
                 <StatItem value={overview.stats.activePlans} label="plans actifs autour de toi" />
-                <StatItem value={overview.stats.averageRadius} label="rayon moyen des plans spontanés" />
+                <StatItem value={overview.stats.averageRadius} label="rayon moyen des plans spontanÃ©s" />
               </div>
             </div>
             <div className="mobile-actions">
@@ -64,12 +64,12 @@ function HomePage() {
                   <Menu size={18} />
                 </summary>
                 <div className="mobile-menu-sheet">
-                  <button type="button" onClick={() => intentSheet.openIntentSheet()}>
+                  <button type="button" onClick={() => overview.presence[0] && intentSheet.openIntentSheet(overview.presence[0])}>
                     <Plus size={16} />
-                    <span>Créer un plan</span>
+                    <span>CrÃ©er un plan</span>
                   </button>
-                  <a href="#presence"><Users size={16} /><span>Qui est là ?</span></a>
-                  <a href="#plans"><Sparkles size={16} /><span>Plans spontanés</span></a>
+                  <a href="#presence"><Users size={16} /><span>Qui est lÃ  ?</span></a>
+                  <a href="#plans"><Sparkles size={16} /><span>Plans spontanÃ©s</span></a>
                 </div>
               </details>
             </div>
@@ -85,7 +85,7 @@ function HomePage() {
           <section className="panel presence-panel" id="presence">
             <div className="section-heading compact">
               <div>
-                <h4 className="eyebrow">Qui est là ?</h4>
+                <h4 className="eyebrow">Qui est lÃ  ?</h4>
               </div>
             </div>
 
@@ -117,7 +117,7 @@ function HomePage() {
           <section className="panel plans-panel" id="plans">
             <div className="section-heading">
               <div>
-                <h4 className="eyebrow">Plans spontanés</h4>
+                <h4 className="eyebrow">Plans spontanÃ©s</h4>
               </div>
               <div className="plans-heading-actions">
                 <a className="filter-drawer-trigger" href="#plans-controls" aria-label="Ouvrir les filtres">
@@ -157,17 +157,7 @@ function HomePage() {
 
       <FiltersDrawer filters={filters} onFiltersChange={overviewState.setFilters} />
 
-      <button
-        className="primary-action floating-cta"
-        type="button"
-        onClick={() => intentSheet.openIntentSheet()}
-        aria-label="Créer un plan"
-      >
-        <Plus size={16} />
-      </button>
-
       <IntentSheet
-        isOpen={intentSheet.isOpen}
         selectedAvatar={intentSheet.selectedAvatar}
         intentStep={intentSheet.intentStep}
         form={intentSheet.form}

@@ -17,7 +17,7 @@ const seedUsers = [
     availability: "down",
     circle: "Inner Circle",
     image_path: "/images/Nora.jpeg",
-    status_text: "Peut etre la en 10 min",
+    status_text: "Peut être là en 10 min",
     seen_state: "unseen",
   },
   {
@@ -25,7 +25,7 @@ const seedUsers = [
     availability: "down",
     circle: "Favori",
     image_path: "/images/Sam.jpeg",
-    status_text: "Part du bureau bientot",
+    status_text: "Part du bureau bientôt",
     seen_state: "seen",
   },
   {
@@ -33,7 +33,7 @@ const seedUsers = [
     availability: "probable",
     circle: "Inner Circle",
     image_path: "/images/Julien.jpeg",
-    status_text: "Confirme s'il finit a l'heure",
+    status_text: "Confirme s'il finit à l'heure",
     seen_state: "unseen",
   },
   {
@@ -72,9 +72,9 @@ const seedPlans = [
     time_label: "Vers 17h30",
     duration_label: "45 min",
     area: "Plateau",
-    location_detail: "Plateau, pres du metro Laurier",
+    location_detail: "Plateau, près du métro Laurier",
     summary:
-      "Plan spontane pour attraper un cafe, prendre des nouvelles et voir qui est encore chaud pour continuer la soiree apres.",
+      "Plan spontané pour attraper un café, prendre des nouvelles et voir qui est encore chaud pour continuer la soirée après.",
     visibility: "Inner Circle + Connexions",
     address_rule: "Adresse exacte visible quand tu passes en \"Je suis dispo\".",
     is_online: 0,
@@ -88,11 +88,11 @@ const seedPlans = [
     time_label: "18h - 20h",
     duration_label: "1h30",
     area: "Canal",
-    location_detail: "Canal Lachine, point de rencontre partage apres RSVP",
+    location_detail: "Canal Lachine, point de rencontre partagé après RSVP",
     summary:
-      "On se rejoint pour marcher sans pression, jaser un peu et prendre quelque chose sur le chemin si le mood est la.",
+      "On se rejoint pour marcher sans pression, jaser un peu et prendre quelque chose sur le chemin si le mood est là.",
     visibility: "Connexions",
-    address_rule: "Le point exact se revele apres confirmation.",
+    address_rule: "Le point exact se révèle après confirmation.",
     is_online: 0,
   },
   {
@@ -104,11 +104,11 @@ const seedPlans = [
     time_label: "Autour de 21h",
     duration_label: "1h",
     area: "En ligne",
-    location_detail: "Discord + lobby partage apres confirmation",
+    location_detail: "Discord + lobby partagé après confirmation",
     summary:
-      "Petit plan leger pour gamer une heure, voir qui est dispo et garder la porte ouverte a plus si ca clique.",
+      "Petit plan léger pour gamer une heure, voir qui est dispo et garder la porte ouverte à plus si ça clique.",
     visibility: "Connexions",
-    address_rule: "Le lien vocal se partage aux participants confirmes.",
+    address_rule: "Le lien vocal se partage aux participants confirmés.",
     is_online: 1,
   }
 ];
@@ -198,9 +198,9 @@ function initializeDatabase() {
     const planByTitle = Object.fromEntries(planIds.map((plan) => [plan.title, plan.id]));
 
     const participantRows = [
-      { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Nora, response: "down", note: "Peut etre la en 10 min" },
-      { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Sam, response: "down", note: "Part du bureau bientot" },
-      { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Julien, response: "probable", note: "Confirme s'il finit a l'heure" },
+      { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Nora, response: "down", note: "Peut être là en 10 min" },
+      { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Sam, response: "down", note: "Part du bureau bientôt" },
+      { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Julien, response: "probable", note: "Confirme s'il finit à l'heure" },
       { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Maya, response: "maybe", note: "Attend de voir le timing exact" },
       { plan_id: planByTitle["Balade sunset + bubble tea"], user_id: byName.Maya, response: "down", note: "Peut partir du Sud-Ouest" },
       { plan_id: planByTitle["Balade sunset + bubble tea"], user_id: byName.Chris, response: "down", note: "Open si on part avant 19h" },
@@ -217,8 +217,8 @@ function initializeDatabase() {
     insertParticipants(participantRows);
 
     const checkinRows = [
-      { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Nora, message: "Je peux y etre dans 10 minutes si vous partez bientot.", minutes_ago: 2, tone: "default" },
-      { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Julien, message: "Fort probable. Ping moi si vous choisissez vraiment le spot pres de Laurier.", minutes_ago: 6, tone: "yellow" },
+      { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Nora, message: "Je peux y être dans 10 minutes si vous partez bientôt.", minutes_ago: 2, tone: "default" },
+      { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Julien, message: "Fort probable. Ping-moi si vous choisissez vraiment le spot près de Laurier.", minutes_ago: 6, tone: "yellow" },
       { plan_id: planByTitle["Cafe express avant le gym"], user_id: byName.Maya, message: "Je regarde selon mon meeting. Gardez-moi dans la loop.", minutes_ago: 9, tone: "gray" },
       { plan_id: planByTitle["Balade sunset + bubble tea"], user_id: byName.Chris, message: "Je suis chaud si on garde ca relax et sans horaire trop strict.", minutes_ago: 5, tone: "default" }
     ];
@@ -233,11 +233,35 @@ function initializeDatabase() {
 }
 
 function normalizeResponseLabel(value) {
-  return value === "down" ? "Down" : value === "probable" ? "Fort probable" : "Peut-etre";
+  return value === "down" ? "Down" : value === "probable" ? "Fort probable" : "Peut-être";
 }
 
 function normalizeCircleTone(circle) {
   return circle === "Inner Circle" ? "inner" : "connections";
+}
+
+function getAccessLevel(circle) {
+  if (circle === "Inner Circle" || circle === "Favori") {
+    return 2;
+  }
+
+  if (circle === "Connexions" || circle === "Inner Circle + Connexions") {
+    return 1;
+  }
+
+  return 0;
+}
+
+function getRequiredAccessLevel(plan) {
+  return Math.max(getAccessLevel(plan.circle), getAccessLevel(plan.visibility));
+}
+
+function canUserAccessPlan(plan, currentUser = null) {
+  if (!currentUser) {
+    return true;
+  }
+
+  return getAccessLevel(currentUser.circle) >= getRequiredAccessLevel(plan);
 }
 
 function getParticipantsForPlan(planId) {
@@ -261,7 +285,7 @@ function getParticipantsForPlan(planId) {
   }));
 }
 
-function getPlanSummaryRows(filters = {}) {
+function getPlanSummaryRows(filters = {}, currentUser = null) {
   const plans = db.prepare(`
     SELECT
       p.id,
@@ -280,7 +304,9 @@ function getPlanSummaryRows(filters = {}) {
     ORDER BY p.id
   `).all();
 
-  const filteredPlans = plans.filter((plan) => matchesPlanFilters(plan, filters));
+  const filteredPlans = plans.filter((plan) => (
+    canUserAccessPlan(plan, currentUser) && matchesPlanFilters(plan, filters)
+  ));
 
   return filteredPlans.map((plan, index) => {
     const participants = getParticipantsForPlan(plan.id);
@@ -386,8 +412,8 @@ function getUsers() {
 }
 
 function getOverview(filters = {}, currentUser = null) {
-  const presence = getPresenceRows();
-  const plans = getPlanSummaryRows(filters);
+  const presence = getPresenceRows().filter((user) => user.id !== currentUser?.id);
+  const plans = getPlanSummaryRows(filters, currentUser);
 
   return {
     currentUser,
@@ -432,7 +458,7 @@ function getUserById(userId) {
   `).get(userId) || null;
 }
 
-function getPlanDetail(planId) {
+function getPlanDetail(planId, currentUser = null) {
   const plan = db.prepare(`
     SELECT
       p.id,
@@ -454,6 +480,10 @@ function getPlanDetail(planId) {
   `).get(planId);
 
   if (!plan) {
+    return null;
+  }
+
+  if (!canUserAccessPlan(plan, currentUser)) {
     return null;
   }
 
@@ -483,17 +513,17 @@ function getPlanDetail(planId) {
       {
         tone: "vc-inner",
         title: "Inner Circle",
-        body: "Voit tout immediatement, y compris le spot exact et qui a deja confirme."
+        body: "Voit tout immédiatement, y compris le spot exact et qui a déjà confirmé."
       },
       {
         tone: "vc-connections",
         title: "Connexions / connaissances",
-        body: "Voit l'intention, l'heure approximative et le quartier. L'adresse exacte se revele apres confirmation."
+        body: "Voit l'intention, l'heure approximative et le quartier. L'adresse exacte se révèle après confirmation."
       },
       {
         tone: "vc-private",
-        title: "Date en vue / prive",
-        body: "Ce plan n'est pas dans ce mode-la. Si active, les details seraient visibles uniquement aux participants."
+        title: "Date en vue / privé",
+        body: "Ce plan n'est pas dans ce mode-là. Si activé, les détails seraient visibles uniquement aux participants."
       }
     ],
     checkins
@@ -527,7 +557,20 @@ function createPlan(input) {
   return getPlanDetail(result.lastInsertRowid);
 }
 
-function upsertRsvp(planId, userId, response) {
+function upsertRsvp(planId, userId, response, currentUser = null) {
+  const plan = db.prepare(`
+    SELECT
+      p.id,
+      p.circle,
+      p.visibility
+    FROM plans p
+    WHERE p.id = ?
+  `).get(planId);
+
+  if (!plan || !canUserAccessPlan(plan, currentUser)) {
+    return null;
+  }
+
   const statement = db.prepare(`
     INSERT INTO plan_participants (plan_id, user_id, response, note)
     VALUES (?, ?, ?, '')
@@ -535,7 +578,7 @@ function upsertRsvp(planId, userId, response) {
   `);
 
   statement.run(planId, userId, response);
-  return getPlanDetail(planId);
+  return getPlanDetail(planId, currentUser);
 }
 
 initializeDatabase();

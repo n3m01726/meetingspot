@@ -35,7 +35,6 @@
   border-radius: 999px;
   text-decoration: none;
   background: var(--control-surface);
-  border: 1px solid var(--line-subtle);
   color: var(--text);
 }
 
@@ -105,7 +104,7 @@ button,
   justify-content: center;
   text-decoration: none;
   border-radius: 999px;
-  padding: 0.82rem 1rem;
+  padding: 1rem;
   border: none;
   cursor: pointer;
   font-weight: 700;

@@ -8,10 +8,6 @@ function buildOverviewQuery(filters) {
     params.set("filter", filters.quick);
   }
 
-  if (filters.circle && filters.circle !== "all") {
-    params.set("circle", filters.circle);
-  }
-
   if (filters.visibility && filters.visibility !== "all") {
     params.set("visibility", filters.visibility);
   }
@@ -25,7 +21,6 @@ function useOverview(currentUser) {
   const [error, setError] = useState("");
   const [filters, setFilters] = useState({
     quick: "all",
-    circle: "all",
     visibility: "all"
   });
 

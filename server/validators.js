@@ -46,7 +46,7 @@ function validateRsvpPayload(payload) {
   const response = asTrimmedString(payload.response, 20);
 
   if (!["down", "maybe", "probable"].includes(response)) {
-    return { ok: false, error: "Reponse invalide." };
+    return { ok: false, error: "Réponse invalide." };
   }
 
   return {

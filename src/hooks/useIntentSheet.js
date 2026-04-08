@@ -10,45 +10,45 @@ const initialForm = {
 };
 
 function useIntentSheet(onPlanCreated) {
+  const [isOpen, setIsOpen] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [intentStep, setIntentStep] = useState("intent");
   const [intent, setIntent] = useState("");
   const [form, setForm] = useState(initialForm);
   const [formError, setFormError] = useState("");
 
-  const closeIntentSheet = () => {
-    setSelectedAvatar(null);
+  const resetSheet = () => {
     setIntentStep("intent");
     setIntent("");
     setForm(initialForm);
     setFormError("");
   };
 
-  const openIntentSheet = (person) => {
+  const closeIntentSheet = () => {
+    setIsOpen(false);
+    setSelectedAvatar(null);
+    resetSheet();
+  };
+
+  const openIntentSheet = (person = null) => {
+    setIsOpen(true);
     setSelectedAvatar(person);
-    setIntentStep("intent");
-    setIntent("");
-    setForm(initialForm);
-    setFormError("");
+    resetSheet();
   };
 
   const chooseIntent = (nextIntent) => {
-    if (!selectedAvatar) {
-      return;
-    }
-
     setIntent(nextIntent);
     setIntentStep("form");
     setForm((current) => ({
       ...current,
-      title: `${nextIntent} with ${selectedAvatar.name}`
+      title: selectedAvatar ? `${nextIntent} with ${selectedAvatar.name}` : nextIntent
     }));
   };
 
   const submitPlan = async (event) => {
     event.preventDefault();
 
-    if (!selectedAvatar || !form.visibility || !form.area.trim() || !form.venue.trim()) {
+    if (!form.visibility || !form.area.trim() || !form.venue.trim()) {
       setFormError("Complète les champs requis avant de créer le plan.");
       return;
     }
@@ -65,7 +65,7 @@ function useIntentSheet(onPlanCreated) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          friendName: selectedAvatar.name,
+          friendName: selectedAvatar?.name || "",
           activity: intent || "Custom",
           title: form.title,
           visibility: form.visibility,
@@ -85,6 +85,7 @@ function useIntentSheet(onPlanCreated) {
   };
 
   return {
+    isOpen,
     selectedAvatar,
     intentStep,
     form,

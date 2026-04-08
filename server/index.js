@@ -96,15 +96,15 @@ app.get("/api/plans", (_request, response) => {
     filter: _request.query.filter,
     circle: _request.query.circle,
     visibility: _request.query.visibility
-  }));
+  }, _request.currentUser));
 });
 
 app.get("/api/plans/:id", (request, response) => {
   const planId = Number.parseInt(request.params.id, 10);
-  const plan = getPlanDetail(planId);
+  const plan = getPlanDetail(planId, request.currentUser);
 
   if (!plan) {
-    response.status(404).json({ error: "Plan introuvable" });
+    response.status(404).json({ error: "Plan introuvable ou non accessible." });
     return;
   }
 
@@ -138,7 +138,7 @@ app.post("/api/plans", (request, response) => {
     durationLabel: body.durationLabel,
     area,
     locationDetail: venue,
-    summary: body.summary || `Plan spontane propose avec ${body.friendName || "un proche"}.`,
+    summary: body.summary || `Plan spontané proposé avec ${body.friendName || "un proche"}.`,
     visibility: body.visibility || "Inner Circle + Connexions",
     addressRule: "Le lieu exact se confirme quand le plan prend forme.",
     isOnline: area.toLowerCase().includes("ligne") || venue.toLowerCase().includes("discord")
@@ -169,9 +169,9 @@ app.post("/api/plans/:id/rsvp", (request, response) => {
     return;
   }
 
-  const updatedPlan = upsertRsvp(planId, userId, validation.value.response);
+  const updatedPlan = upsertRsvp(planId, userId, validation.value.response, request.currentUser);
   if (!updatedPlan) {
-    response.status(404).json({ error: "Plan introuvable" });
+    response.status(404).json({ error: "Plan introuvable ou non accessible." });
     return;
   }
 
