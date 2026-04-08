@@ -4,14 +4,15 @@ import { useNavigate, useParams } from "react-router-dom";
 import AuthSwitcher from "../components/AuthSwitcher.jsx";
 import DetailMeta from "../components/DetailMeta.jsx";
 import StatePanel from "../components/StatePanel.jsx";
-import { toneClassMap, visibilityModeOptions } from "../constants/ui.js";
+import { toneClassMap, VISIBILITY_MODES } from "../constants/ui.js";
 import { fetchJson } from "../lib/api.js";
+import { getAccessStateCopy, getVisibilityModeHelper, getVisibilityModeShortLabel, visibilityProductCopy } from "../ui/visibilityCopy.js";
 import useAuth from "../hooks/useAuth.js";
 
 function buildEditForm(plan) {
   return {
     title: plan.title || "",
-    visibilityMode: plan.visibilityMode || visibilityModeOptions[0].key,
+    visibilityMode: plan.visibilityMode || VISIBILITY_MODES.RSVP_FIRST,
     timeLabel: plan.timeLabel || "",
     area: plan.area || "",
     locationDetail: plan.locationDetail || "",
@@ -29,7 +30,7 @@ function PlanDetailPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
     title: "",
-    visibilityMode: visibilityModeOptions[0].key,
+    visibilityMode: VISIBILITY_MODES.RSVP_FIRST,
     timeLabel: "",
     area: "",
     locationDetail: "",
@@ -68,7 +69,7 @@ function PlanDetailPage() {
       setEditForm(buildEditForm(updatedPlan));
       setFeedback(
         updatedPlan.detailAccess === "locked"
-          ? "Réponse enregistrée. L’hôte doit encore approuver l’accès complet."
+          ? "Réponse enregistrée. L’accès complet reste en attente d’approbation."
           : "Réponse enregistrée. Le plan vient d’être mis à jour."
       );
     } catch (nextError) {
@@ -85,7 +86,7 @@ function PlanDetailPage() {
       });
       setPlan(updatedPlan);
       setEditForm(buildEditForm(updatedPlan));
-      setFeedback("Accès approuvé. Cette personne peut maintenant voir les détails exacts.");
+      setFeedback("Accès complet accordé.");
     } catch (nextError) {
       setFeedback(nextError.message);
     }
@@ -122,9 +123,13 @@ function PlanDetailPage() {
   }
 
   const isLocked = plan.detailAccess === "locked";
+  const accessStateCopy = getAccessStateCopy({
+    detailAccess: plan.detailAccess,
+    approvalStatus: plan.currentUserApprovalStatus
+  });
   const authPrompt = auth.currentUser
     ? `Tu réponds actuellement comme ${auth.currentUser.name}.`
-    : "Choisis un profil pour réagir au plan et voir ce que cette personne a réellement le droit de consulter.";
+    : "Choisis un profil pour réagir au plan et comprendre quel niveau d’accès cette personne obtient.";
 
   return (
     <div className="detail-shell">
@@ -141,7 +146,7 @@ function PlanDetailPage() {
             <span className={`circle-tag ${plan.circleTone}`}>{plan.circle}</span>
             <span className="plan-card__visibility-tag">
               <span>{plan.visibilityModeIcon}</span>
-              <span>{plan.visibilityModeLabel}</span>
+              <span>{getVisibilityModeShortLabel(plan.visibilityMode)}</span>
             </span>
             <span className={`momentum-tag ${plan.momentumTone === "hot" ? "hot" : plan.momentumTone === "subtle" ? "subtle" : ""}`}>
               {plan.momentumLabel}
@@ -170,8 +175,8 @@ function PlanDetailPage() {
                 <LockKeyhole size={18} />
               </span>
               <div className="detail-locked-card__copy">
-                <strong>Détails exacts verrouillés pour le moment</strong>
-                <p>{plan.lockedReason || "Réponds d’abord au plan pour demander l’accès complet."}</p>
+                <strong>{visibilityProductCopy.detail.accessLockedTitle}</strong>
+                <p>{plan.lockedReason || accessStateCopy.body || visibilityProductCopy.detail.accessLockedDefault}</p>
               </div>
             </div>
           ) : null}
@@ -180,26 +185,26 @@ function PlanDetailPage() {
             <DetailMeta
               icon={<Sparkles size={16} />}
               label="Quand"
-              value={isLocked ? "Visible après approbation" : plan.timeLabel}
-              copy={isLocked ? "La fenêtre précise se débloque une fois l’accès complet accordé." : `Fenêtre souple de ${plan.durationLabel}. On bouge dès que 2 à 3 personnes sont vraiment partantes.`}
+              value={isLocked ? "Accès complet après approbation" : plan.timeLabel}
+              copy={isLocked ? "L’heure précise apparaît dès que l’accès complet est accordé." : `Fenêtre souple de ${plan.durationLabel}. On bouge dès que 2 à 3 personnes sont vraiment partantes.`}
             />
             <DetailMeta
               icon={<MapPinned size={16} />}
-              label="Où"
-              value={isLocked ? "Lieu exact masqué" : plan.locationDetail}
-              copy={isLocked ? "Tu vois le contexte du plan, pas l’adresse exacte pour l’instant." : plan.addressRule}
+              label={visibilityProductCopy.detail.accessWhereLabel}
+              value={isLocked ? "Masqué pour le moment" : plan.locationDetail}
+              copy={isLocked ? "Tu vois le contexte du plan, pas le lieu exact pour l’instant." : plan.addressRule}
             />
             <DetailMeta
               icon={<Users size={16} />}
-              label="Réponses"
+              label={visibilityProductCopy.detail.accessResponsesLabel}
               value={`${plan.confirmedCount} confirmés • ${plan.interestedCount} intéressés`}
-              copy={isLocked ? "La liste complète des participants se débloque après approbation." : `${plan.circle} voit le contexte de ce plan.`}
+              copy={isLocked ? "La liste complète se débloque avec l’accès complet." : `${plan.circle} voit le contexte de ce plan.`}
             />
             <DetailMeta
               icon={<ShieldCheck size={16} />}
-              label="Visibilité"
-              value={plan.visibilityModeLabel}
-              copy={plan.visibilityModeDescription}
+              label={visibilityProductCopy.detail.visibilitySectionTitle}
+              value={getVisibilityModeShortLabel(plan.visibilityMode)}
+              copy={getVisibilityModeHelper(plan.visibilityMode, "detailHelper")}
             />
           </div>
         </section>
@@ -220,10 +225,10 @@ function PlanDetailPage() {
               </label>
 
               <label>
-                <span>Mode de visibilité</span>
+                <span>{visibilityProductCopy.detail.visibilitySectionTitle}</span>
                 <select value={editForm.visibilityMode} onChange={(event) => setEditForm({ ...editForm, visibilityMode: event.target.value })}>
-                  {visibilityModeOptions.map((option) => (
-                    <option key={option.key} value={option.key}>{option.label}</option>
+                  {Object.values(VISIBILITY_MODES).map((mode) => (
+                    <option key={mode} value={mode}>{getVisibilityModeShortLabel(mode)}</option>
                   ))}
                 </select>
               </label>
@@ -231,6 +236,11 @@ function PlanDetailPage() {
               <label>
                 <span>Quand</span>
                 <input type="text" value={editForm.timeLabel} onChange={(event) => setEditForm({ ...editForm, timeLabel: event.target.value })} />
+              </label>
+
+              <label>
+                <span>Cercle</span>
+                <input type="text" value={plan.circle} disabled />
               </label>
 
               <label>
@@ -264,8 +274,8 @@ function PlanDetailPage() {
         <section className="panel detail-response-card">
           <div className="section-heading compact">
             <div>
-              <p className="eyebrow">Répondre</p>
-              <h3>{isLocked ? "Débloquer l’accès complet" : "Est-ce que tu embarques ?"}</h3>
+              <p className="eyebrow">{visibilityProductCopy.detail.responseSection}</p>
+              <h3>{isLocked ? visibilityProductCopy.detail.unlockHeading : visibilityProductCopy.detail.joinHeading}</h3>
             </div>
           </div>
 
@@ -297,7 +307,7 @@ function PlanDetailPage() {
           <section className="panel approvals-card">
             <div className="section-heading compact">
               <div>
-                <p className="eyebrow">Approbations</p>
+                <p className="eyebrow">Accès complet</p>
                 <h3>Demandes en attente</h3>
               </div>
             </div>
@@ -313,7 +323,7 @@ function PlanDetailPage() {
                     </div>
                   </div>
                   <button className="plan-card__cta" type="button" onClick={() => handleApprove(participant.id)}>
-                    Approuver
+                    Accorder l’accès complet
                   </button>
                 </article>
               ))}
@@ -327,7 +337,7 @@ function PlanDetailPage() {
               <div className="participants-header">
                 <div>
                   <p className="eyebrow">Participants</p>
-                  <h3>Qui est déjà dans la boucle</h3>
+                  <h3>Qui a déjà l’accès complet</h3>
                 </div>
               </div>
 
@@ -382,18 +392,24 @@ function PlanDetailPage() {
         <section className="panel visibility-card-large">
           <div className="section-heading compact">
             <div>
-              <p className="eyebrow">Visibilité</p>
-              <h3>Qui voit quoi</h3>
+              <p className="eyebrow">{visibilityProductCopy.detail.visibilitySectionTitle}</p>
+              <h3>{visibilityProductCopy.detail.accessSectionTitle}</h3>
             </div>
           </div>
 
           <div className="visibility-stack">
-            {plan.visibilityLines.map((line) => (
-              <article className={`visibility-line ${line.tone}`} key={line.title}>
-                <strong>{line.title}</strong>
-                <p>{line.body}</p>
-              </article>
-            ))}
+            <article className="visibility-line vc-connections">
+              <strong>Cercle</strong>
+              <p>{`${plan.circle} décrit le contexte social de ce plan.`}</p>
+            </article>
+            <article className="visibility-line vc-inner">
+              <strong>{visibilityProductCopy.detail.visibilitySectionTitle}</strong>
+              <p>{getVisibilityModeHelper(plan.visibilityMode, "detailHelper")}</p>
+            </article>
+            <article className="visibility-line vc-private">
+              <strong>{visibilityProductCopy.detail.accessSectionTitle}</strong>
+              <p>{isLocked ? (plan.lockedReason || accessStateCopy.body || visibilityProductCopy.detail.accessLockedDefault) : "Les détails exacts sont visibles pour toi maintenant."}</p>
+            </article>
           </div>
         </section>
       </main>

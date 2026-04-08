@@ -1,14 +1,21 @@
-import { quickFilters, visibilityFilters } from "../constants/ui.js";
+import { quickFilters, visibilityFilters, VISIBILITY_MODES } from "../constants/ui.js";
+import { getVisibilityModeHelper, getVisibilityModeShortLabel, visibilityProductCopy } from "../ui/visibilityCopy.js";
+
+const modeCards = [
+  VISIBILITY_MODES.RSVP_FIRST,
+  VISIBILITY_MODES.CIRCLE_OPEN,
+  VISIBILITY_MODES.PUBLIC_VIBE
+];
 
 function FiltersDrawer({ filters, onFiltersChange }) {
   return (
     <section className="drawer-overlay" id="plans-controls">
       <a className="drawer-backdrop" href="#plans" aria-label="Fermer"></a>
-      <aside className="drawer-card" aria-label="Filtres et visibilité">
+      <aside className="drawer-card" aria-label={visibilityProductCopy.filters.title}>
         <div className="drawer-header">
           <div>
             <p className="eyebrow">Plans spontanés</p>
-            <h3>Filtres et visibilité</h3>
+            <h3>{visibilityProductCopy.filters.title}</h3>
           </div>
           <a className="drawer-close" href="#plans" aria-label="Fermer le panneau">
             Fermer
@@ -16,8 +23,8 @@ function FiltersDrawer({ filters, onFiltersChange }) {
         </div>
 
         <section className="drawer-section">
-          <p className="drawer-label">Filtres rapides</p>
-          <div className="audience-filters" aria-label="Filtres rapides">
+          <p className="drawer-label">{visibilityProductCopy.filters.quickFilters}</p>
+          <div className="audience-filters" aria-label={visibilityProductCopy.filters.quickFilters}>
             {quickFilters.map((filter) => (
               <button
                 key={filter.key}
@@ -32,8 +39,8 @@ function FiltersDrawer({ filters, onFiltersChange }) {
         </section>
 
         <section className="drawer-section">
-          <p className="drawer-label">Plans uniquement visibles par ces cercles</p>
-          <div className="audience-filters" aria-label="Filtres de visibilité des plans">
+          <p className="drawer-label">{visibilityProductCopy.filters.circleFilters}</p>
+          <div className="audience-filters" aria-label={visibilityProductCopy.filters.circleFilters}>
             {visibilityFilters.map((filter) => (
               <button
                 key={filter.key}
@@ -48,32 +55,16 @@ function FiltersDrawer({ filters, onFiltersChange }) {
         </section>
 
         <section className="drawer-section">
-          <p className="drawer-label">Visibilité / interaction</p>
-          <div className="visibility-grid">
-            <article className="visibility-card vc-inner">
-              <strong>Inner Circle</strong>
-              <p>Voient tout immédiatement. Peuvent drop-in directement. RSVP flexible, absence = OK.</p>
-            </article>
-            <article className="visibility-card vc-connections">
-              <strong>Connexions / connaissances</strong>
-              <p>Voient intention + quartier approximatif. Peuvent demander les détails si intéressés.</p>
-            </article>
-            <article className="visibility-card vc-passive">
-              <strong>Vu une fois / social passif</strong>
-              <p>Invitation anonymisée. Détails révélés seulement si confirmés.</p>
-            </article>
-            <article className="visibility-card vc-private">
-              <strong>Ohhh, une date en vue!</strong>
-              <p>Invitation totalement privée. Détails révélés uniquement aux participants.</p>
-            </article>
-            <article className="visibility-card vc-ghosted">
-              <strong>Ghosteurs récurrents</strong>
-              <p>Voient l'intention mais pas les détails sensibles.</p>
-            </article>
-            <article className="visibility-card vc-blocked">
-              <strong>Watch out / block list</strong>
-              <p>Aucun accès. Bloqué automatiquement.</p>
-            </article>
+          <p className="drawer-label">{visibilityProductCopy.filters.visibilityModes}</p>
+          <div className="visibility-grid" aria-label={visibilityProductCopy.filters.visibilityModes}>
+            {modeCards.map((mode) => (
+              <article className="visibility-card" key={mode}>
+                <div className="visibility-card__body">
+                  <strong>{getVisibilityModeShortLabel(mode)}</strong>
+                  <p>{getVisibilityModeHelper(mode, "detailHelper")}</p>
+                </div>
+              </article>
+            ))}
           </div>
         </section>
       </aside>

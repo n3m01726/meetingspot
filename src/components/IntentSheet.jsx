@@ -1,4 +1,11 @@
-import { availabilityLabelMap, intentOptions, visibilityModeOptions } from "../constants/ui.js";
+import { availabilityLabelMap, intentOptions, VISIBILITY_MODES } from "../constants/ui.js";
+import { getVisibilityModeHelper, getVisibilityModeShortLabel, visibilityProductCopy } from "../ui/visibilityCopy.js";
+
+const visibilityModeOptions = [
+  VISIBILITY_MODES.RSVP_FIRST,
+  VISIBILITY_MODES.CIRCLE_OPEN,
+  VISIBILITY_MODES.PUBLIC_VIBE
+];
 
 function IntentSheet({
   isOpen,
@@ -30,7 +37,7 @@ function IntentSheet({
             ) : null}
             <div className="intent-selected-copy">
               <span className="intent-sheet-title">
-                {selectedAvatar ? "Créer un plan avec" : "Créer un plan"}
+                {selectedAvatar ? visibilityProductCopy.creation.withPersonTitle : visibilityProductCopy.creation.title}
               </span>
               {selectedAvatar ? <strong id="intent-sheet-title">{selectedAvatar.name}</strong> : <strong id="intent-sheet-title">Nouveau moment spontané</strong>}
               {selectedAvatar ? (
@@ -38,7 +45,7 @@ function IntentSheet({
                   {`${selectedAvatar.availabilityLabel || availabilityLabelMap[selectedAvatar.availability]} • ${selectedAvatar.circle}`}
                 </span>
               ) : (
-                <span className="intent-selected-meta">Choisis une activité, un mode d’ouverture et un contexte simple.</span>
+                <span className="intent-selected-meta">{visibilityProductCopy.creation.genericSubtitle}</span>
               )}
             </div>
           </div>
@@ -46,7 +53,7 @@ function IntentSheet({
 
         <div className={`intent-sheet-step ${intentStep === "intent" ? "intent-sheet-step-active" : ""}`}>
           <div className="intent-sheet-copy">
-            <p className="eyebrow">Qu’est-ce que vous pourriez faire ?</p>
+            <p className="eyebrow">{visibilityProductCopy.creation.intentPrompt}</p>
           </div>
           <div className="intent-grid">
             {intentOptions.map(({ key, label, Icon }) => (
@@ -75,20 +82,20 @@ function IntentSheet({
           ) : null}
 
           <fieldset className="intent-fieldset">
-            <legend>Mode de visibilité</legend>
+            <legend>{visibilityProductCopy.creation.visibilityLegend}</legend>
             <div className="visibility-grid">
-              {visibilityModeOptions.map((option) => (
-                <label className="visibility-card" key={option.key}>
+              {visibilityModeOptions.map((mode) => (
+                <label className="visibility-card" key={mode}>
                   <input
                     type="radio"
                     name="visibility-mode"
-                    value={option.key}
-                    checked={form.visibilityMode === option.key}
+                    value={mode}
+                    checked={form.visibilityMode === mode}
                     onChange={(event) => onFormChange({ ...form, visibilityMode: event.target.value })}
                   />
                   <div className="visibility-card__body">
-                    <strong>{option.label}</strong>
-                    <p>{option.helper}</p>
+                    <strong>{getVisibilityModeShortLabel(mode)}</strong>
+                    <p>{getVisibilityModeHelper(mode, "creationHelper")}</p>
                   </div>
                 </label>
               ))}
