@@ -1,15 +1,16 @@
 import { useState } from "react";
+import { VISIBILITY_MODES } from "../constants/ui.js";
 import { fetchJson } from "../lib/api.js";
 
 const initialForm = {
   title: "",
-  visibility: "",
+  visibilityMode: VISIBILITY_MODES.RSVP_FIRST,
   timeRange: "now",
   area: "",
   venue: ""
 };
 
-function useIntentSheet(onPlanCreated) {
+function useIntentSheet(onPlanCreated, currentUser) {
   const [isOpen, setIsOpen] = useState(false);
   const [selectedAvatar, setSelectedAvatar] = useState(null);
   const [intentStep, setIntentStep] = useState("intent");
@@ -41,14 +42,14 @@ function useIntentSheet(onPlanCreated) {
     setIntentStep("form");
     setForm((current) => ({
       ...current,
-      title: selectedAvatar ? `${nextIntent} with ${selectedAvatar.name}` : nextIntent
+      title: selectedAvatar ? `${nextIntent} avec ${selectedAvatar.name}` : nextIntent
     }));
   };
 
   const submitPlan = async (event) => {
     event.preventDefault();
 
-    if (!form.visibility || !form.area.trim() || !form.venue.trim()) {
+    if (!form.visibilityMode || !form.area.trim() || !form.venue.trim()) {
       setFormError("Complète les champs requis avant de créer le plan.");
       return;
     }
@@ -68,7 +69,8 @@ function useIntentSheet(onPlanCreated) {
           friendName: selectedAvatar?.name || "",
           activity: intent || "Custom",
           title: form.title,
-          visibility: form.visibility,
+          visibilityMode: form.visibilityMode,
+          circle: selectedAvatar?.circle || currentUser?.circle || "Connexions",
           area: form.area,
           venue: form.venue,
           timeLabel: timeLabelMap[form.timeRange] || "Plus tard"

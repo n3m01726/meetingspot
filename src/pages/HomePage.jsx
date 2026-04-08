@@ -15,10 +15,10 @@ function HomePage() {
   const navigate = useNavigate();
   const auth = useAuth();
   const overviewState = useOverview(auth.currentUser);
-  const intentSheet = useIntentSheet(() => overviewState.reloadOverview(overviewState.filters));
+  const intentSheet = useIntentSheet(() => overviewState.reloadOverview(overviewState.filters), auth.currentUser);
 
   if (!overviewState.overview && (overviewState.error || auth.error)) {
-    return <StatePanel label={`Impossible de charger l'app: ${overviewState.error || auth.error}`} />;
+    return <StatePanel label={`Impossible de charger l'app : ${overviewState.error || auth.error}`} />;
   }
 
   if (!overviewState.overview || auth.currentUser === undefined) {

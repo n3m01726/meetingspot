@@ -7,6 +7,12 @@ import {
   Sparkles
 } from "lucide-react";
 
+export const VISIBILITY_MODES = {
+  RSVP_FIRST: "rsvp_first",
+  CIRCLE_OPEN: "circle_open",
+  PUBLIC_VIBE: "public_vibe"
+};
+
 export const toneClassMap = {
   default: "",
   yellow: "yellow",

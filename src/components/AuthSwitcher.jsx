@@ -14,7 +14,7 @@ function AuthSwitcher({ currentUser, users, onLogin, onLogout }) {
         <option value="">Choisir un profil</option>
         {users.map((user) => (
           <option key={user.id} value={user.id}>
-            {user.name} • {user.circle}
+            {`${user.name}${user.isAdmin ? " (admin)" : ""} • ${user.circle}`}
           </option>
         ))}
       </select>

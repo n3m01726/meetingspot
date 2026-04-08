@@ -1,4 +1,11 @@
-import { availabilityLabelMap, intentOptions } from "../constants/ui.js";
+import { availabilityLabelMap, intentOptions, VISIBILITY_MODES } from "../constants/ui.js";
+import { getVisibilityModeHelper, getVisibilityModeShortLabel, visibilityProductCopy } from "../ui/visibilityCopy.js";
+
+const visibilityModeOptions = [
+  VISIBILITY_MODES.RSVP_FIRST,
+  VISIBILITY_MODES.CIRCLE_OPEN,
+  VISIBILITY_MODES.PUBLIC_VIBE
+];
 
 function IntentSheet({
   isOpen,
@@ -30,21 +37,23 @@ function IntentSheet({
             ) : null}
             <div className="intent-selected-copy">
               <span className="intent-sheet-title">
-                {selectedAvatar ? "Créer un plan avec " : ""}
+                {selectedAvatar ? visibilityProductCopy.creation.withPersonTitle : visibilityProductCopy.creation.title}
               </span>
-              {selectedAvatar ? <span id="intent-sheet-title">{selectedAvatar.name}</span> : <span id="intent-sheet-title"></span>}
+              {selectedAvatar ? <strong id="intent-sheet-title">{selectedAvatar.name}</strong> : <strong id="intent-sheet-title">Nouveau moment spontané</strong>}
               {selectedAvatar ? (
                 <span className="intent-selected-meta">
                   {`${selectedAvatar.availabilityLabel || availabilityLabelMap[selectedAvatar.availability]} • ${selectedAvatar.circle}`}
                 </span>
-              ) : null}
+              ) : (
+                <span className="intent-selected-meta">{visibilityProductCopy.creation.genericSubtitle}</span>
+              )}
             </div>
           </div>
         </div>
 
         <div className={`intent-sheet-step ${intentStep === "intent" ? "intent-sheet-step-active" : ""}`}>
           <div className="intent-sheet-copy">
-            <p className="eyebrow">Qu'est-ce que vous pourriez faire ?</p>
+            <p className="eyebrow">{visibilityProductCopy.creation.intentPrompt}</p>
           </div>
           <div className="intent-grid">
             {intentOptions.map(({ key, label, Icon }) => (
@@ -65,23 +74,33 @@ function IntentSheet({
 
           {selectedAvatar ? (
             <div className="intent-field intent-person-row">
-              <div className="intent-person-chip">
+              <div className="intent-participant-pill">
                 <img className="avatar-photo avatar-photo--md" src={selectedAvatar.imagePath} alt={selectedAvatar.name} />
                 <span className="intent-participant-name">{selectedAvatar.name}</span>
               </div>
             </div>
           ) : null}
 
-          <div className="intent-field">
-            <label>Visibilité</label>
-            <select className="intent-visibility-select" value={form.visibility} onChange={(event) => onFormChange({ ...form, visibility: event.target.value })}>
-              <option value="">Choisir</option>
-              <option value="Inner Circle">Inner Circle uniquement</option>
-              <option value="Inner Circle + Connexions">Inner Circle + Connexions</option>
-              <option value="Connexions">Connexions</option>
-            </select>
-            <span className="intent-error" aria-live="polite"></span>
-          </div>
+          <fieldset className="intent-fieldset">
+            <legend>{visibilityProductCopy.creation.visibilityLegend}</legend>
+            <div className="visibility-grid">
+              {visibilityModeOptions.map((mode) => (
+                <label className="visibility-card" key={mode}>
+                  <input
+                    type="radio"
+                    name="visibility-mode"
+                    value={mode}
+                    checked={form.visibilityMode === mode}
+                    onChange={(event) => onFormChange({ ...form, visibilityMode: event.target.value })}
+                  />
+                  <div className="visibility-card__body">
+                    <strong>{getVisibilityModeShortLabel(mode)}</strong>
+                    <p>{getVisibilityModeHelper(mode, "creationHelper")}</p>
+                  </div>
+                </label>
+              ))}
+            </div>
+          </fieldset>
 
           <fieldset className="intent-fieldset">
             <legend>Quand ?</legend>
@@ -92,7 +111,7 @@ function IntentSheet({
                 ["tonight", "Ce soir"],
                 ["custom", "Plus tard"]
               ].map(([value, label]) => (
-                <label key={value}>
+                <label className="intent-radio-chip" key={value}>
                   <input type="radio" name="intent-time-range" value={value} checked={form.timeRange === value} onChange={(event) => onFormChange({ ...form, timeRange: event.target.value })} />
                   <span>{label}</span>
                 </label>
@@ -115,7 +134,7 @@ function IntentSheet({
 
           {formError ? <p className="eyebrow">{formError}</p> : null}
 
-          <div className="intent-footer">
+          <div className="intent-form-actions">
             <button className="ghost intent-back-button" type="button" onClick={onBack}>Retour</button>
             <button className="primary-action" type="submit">Créer le plan</button>
           </div>
