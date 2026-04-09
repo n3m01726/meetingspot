@@ -993,6 +993,15 @@ function upsertRsvp(planId, userId, response, currentUser = null) {
     return null;
   }
 
+  if (response === "pass") {
+    db.prepare(`
+      DELETE FROM plan_participants
+      WHERE plan_id = ? AND user_id = ?
+    `).run(planId, userId);
+
+    return getPlanDetail(planId, currentUser);
+  }
+
   const approvalStatus = getPlanVisibilityMode(plan) === VISIBILITY_MODES.RSVP_FIRST && plan.hostUserId !== userId
     ? "pending"
     : "approved";
