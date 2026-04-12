@@ -11,12 +11,13 @@ function PlanCard({ plan, onOpen }) {
   return (
     <article className={`plan-card${plan.featured ? " plan-card--featured" : ""}${plan.muted ? " plan-card--muted" : ""}${plan.detailAccess === "locked" ? " plan-card--locked" : ""}`}>
       <header className="plan-card__header">
-        {showCircleTag ? <span className={`circle-tag ${plan.circleTone}`}>{plan.circle}</span> : null}
-        <span className={`plan-card__visibility-tag${visibilityModifier}`}>
+      <span className={`plan-card__visibility-tag${visibilityModifier}`}>
           <span>{plan.visibilityModeIcon}</span>
           <span>{plan.visibilityModeLabel}</span>
         </span>
-        {showMomentumTag ? <span className={`plan-card__momentum${toneModifier}`}>{plan.momentumLabel}</span> : null}
+        
+        {showCircleTag ? <span className={`circle-tag ${plan.circleTone}`}>{plan.circle}</span> : null}
+
       </header>
 
       <div className="plan-card__content">

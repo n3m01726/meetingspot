@@ -1,4 +1,4 @@
-const { VISIBILITY_MODES } = require("./db");
+const { VISIBILITY_MODES } = require("./db/index");
 
 function asTrimmedString(value, maxLength = 120) {
   if (typeof value !== "string") {

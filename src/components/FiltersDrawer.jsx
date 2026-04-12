@@ -7,7 +7,6 @@ function FiltersDrawer({ filters, onFiltersChange }) {
       <aside className="drawer-card" aria-label="Filtres et visibilité">
         <div className="drawer-header">
           <div>
-            <p className="eyebrow">Plans spontanés</p>
             <h3>Filtres et visibilité</h3>
           </div>
           <a className="drawer-close" href="#plans" aria-label="Fermer le panneau">
@@ -48,7 +47,7 @@ function FiltersDrawer({ filters, onFiltersChange }) {
         </section>
 
         <section className="drawer-section">
-          <p className="drawer-label">Visibilité / interaction</p>
+          <p className="drawer-label">Cercles par défaut</p>
           <div className="visibility-grid">
             <article className="visibility-card vc-inner">
               <strong>Inner Circle</strong>

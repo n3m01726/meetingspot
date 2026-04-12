@@ -13,7 +13,7 @@ const {
   deletePlan,
   upsertRsvp,
   approvePlanParticipant
-} = require("./db");
+} = require("./db/index");
 const {
   validatePlanPayload,
   validatePlanUpdatePayload,

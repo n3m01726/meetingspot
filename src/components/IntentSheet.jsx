@@ -1,5 +1,5 @@
 import { availabilityLabelMap, intentOptions, visibilityModeOptions } from "../constants/ui.js";
-
+import { UserRound } from "lucide-react";
 function IntentSheet({
   isOpen,
   selectedAvatar,
@@ -41,7 +41,8 @@ function IntentSheet({
                 <span className="intent-selected-meta">Choisis une activité, un mode d’ouverture et un contexte simple.</span>
               )}
             </div>
-          </div>
+            <div className="icon__profile"> <UserRound size={32} /></div>
+            </div>
         </div>
 
         <div className={`intent-sheet-step ${intentStep === "intent" ? "intent-sheet-step-active" : ""}`}>

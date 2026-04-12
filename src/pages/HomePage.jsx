@@ -48,7 +48,7 @@ function HomePage() {
               <span className="brand-mark">MS</span>
               <div>
                 <h1>meetingspot</h1>
-                <p className="eyebrow-title">Spontanéité sociale</p>
+                <p>spontanéité sociale</p>
               </div>
             </div>
             <div className="topbar-meta">
@@ -85,7 +85,7 @@ function HomePage() {
           <section className="panel presence-panel" id="presence">
             <div className="section-heading compact">
               <div>
-                <h4 className="eyebrow">Qui est là ?</h4>
+                <h3>Qui est là ?</h3>
               </div>
             </div>
 
@@ -117,7 +117,7 @@ function HomePage() {
           <section className="panel plans-panel" id="plans">
             <div className="section-heading">
               <div>
-                <h4 className="eyebrow">Plans spontanés</h4>
+                <h3>Plans spontanés</h3>
               </div>
               <div className="plans-heading-actions">
                 <a className="filter-drawer-trigger" href="#plans-controls" aria-label="Ouvrir les filtres">

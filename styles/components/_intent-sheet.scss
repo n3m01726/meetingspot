@@ -1,5 +1,10 @@
 @use "../mixins" as mixins;
 
+.icon__profile {
+  margin: 0 0 0 200px;
+  color: var(--muted);
+}
+
 .intent-sheet-overlay {
   position: fixed;
   inset: 0;

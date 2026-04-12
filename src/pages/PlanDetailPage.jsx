@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, LockKeyhole, MapPinned, MessageCircleMore, PencilLine, ShieldCheck, Sparkles, Users } from "lucide-react";
+import { ArrowLeft, LockKeyhole, MapPinned, MessageCircleMore, PencilLine, ShieldCheck, Sparkles, Users, Trash } from "lucide-react";
 import { useNavigate, useParams } from "react-router-dom";
 import AuthSwitcher from "../components/AuthSwitcher.jsx";
 import DetailMeta from "../components/DetailMeta.jsx";
@@ -165,14 +165,8 @@ function PlanDetailPage() {
               <span>{plan.visibilityModeIcon}</span>
               <span>{plan.visibilityModeLabel}</span>
             </span>
-            {showMomentumTag ? (
-              <span className={`momentum-tag ${plan.momentumTone === "hot" ? "hot" : plan.momentumTone === "subtle" ? "subtle" : ""}`}>
-                {plan.momentumLabel}
-              </span>
-            ) : null}
           </div>
 
-          <p className="detail-kicker">Plan spontané</p>
           <div className="detail-title-row">
             <h2>{plan.title}</h2>
             {plan.isEditable ? (
@@ -185,7 +179,7 @@ function PlanDetailPage() {
                   <span>{isEditing ? "Fermer l’édition" : "Modifier ce plan"}</span>
                 </button>
                 <button className="ghost-button strong detail-title-action detail-title-action--danger" type="button" onClick={handleDeletePlan}>
-                  <span>Supprimer ce plan</span>
+                  <span><Trash size={16} /> Supprimer ce plan</span>
                 </button>
               </div>
             ) : null}
@@ -237,7 +231,6 @@ function PlanDetailPage() {
           <section className="panel detail-edit-card">
             <div className="section-heading compact">
               <div>
-                <p className="eyebrow">Édition</p>
                 <h3>Mettre à jour ce plan</h3>
               </div>
             </div>
@@ -293,8 +286,8 @@ function PlanDetailPage() {
         <section className="panel detail-response-card">
           <div className="section-heading compact">
             <div>
-              <p className="eyebrow">Répondre</p>
-              <h3>{isLocked ? "Débloquer l’accès complet" : "Est-ce que tu embarques ?"}</h3>
+              <h3>{isLocked ? "Débloquer l’accès complet" : "Est-ce que tu embarques ?"} </h3>
+              
             </div>
           </div>
 
@@ -326,8 +319,7 @@ function PlanDetailPage() {
           <section className="panel approvals-card">
             <div className="section-heading compact">
               <div>
-                <p className="eyebrow">Approbations</p>
-                <h3>Demandes en attente</h3>
+                <p className="eyebrow">Demandes en attente</p>
               </div>
             </div>
 
@@ -355,7 +347,6 @@ function PlanDetailPage() {
             <section className="panel participants-card">
               <div className="participants-header">
                 <div>
-                  <p className="eyebrow">Participants</p>
                   <h3>Qui est déjà dans la boucle</h3>
                 </div>
               </div>
@@ -381,7 +372,6 @@ function PlanDetailPage() {
             <section className="panel checkins-card">
               <div className="checkins-header">
                 <div>
-                  <p className="eyebrow">Le loop</p>
                   <h3>Derniers signaux du plan</h3>
                 </div>
               </div>
@@ -408,23 +398,6 @@ function PlanDetailPage() {
           </>
         ) : null}
 
-        <section className="panel visibility-card-large">
-          <div className="section-heading compact">
-            <div>
-              <p className="eyebrow">Visibilité</p>
-              <h3>Qui voit quoi</h3>
-            </div>
-          </div>
-
-          <div className="visibility-stack">
-            {plan.visibilityLines.map((line) => (
-              <article className={`visibility-line ${line.tone}`} key={line.title}>
-                <strong>{line.title}</strong>
-                <p>{line.body}</p>
-              </article>
-            ))}
-          </div>
-        </section>
       </main>
     </div>
   );
