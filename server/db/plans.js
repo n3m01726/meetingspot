@@ -1,107 +1,87 @@
 const { db } = require("./connection");
-const { VISIBILITY_MODES } = require("./constants");
 const {
-  normalizeCircle,
-  normalizeCircleTone,
-  getPlanVisibilityMode,
-  getVisibilityModeLabel,
-  getVisibilityModeIcon,
-  getVisibilityModeDescription,
-  getParticipantApprovalStatus,
-  canUserSeePlanSummary,
-  canUserSeeFullPlanDetail,
-  matchesPlanFilters
-} = require("./helpers");
-const { getParticipantsForPlan, getPendingApprovals } = require("./participants");
-const { getUserById } = require("./users");
+  VISIBILITY_MODE,
+  CIRCLE,
+  circleLabelToId,
+  circleIdToLabel,
+  circleIdToTone,
+  visibilityModeLabel,
+  visibilityModeIcon,
+  visibilityModeDescription,
+} = require("./constants");
+const {
+  getApprovedParticipants,
+  getPendingParticipants,
+  getApprovalStatus,
+  buildRolesForUser,
+} = require("./participants");
+const {
+  canViewPlanSummary,
+  canViewPlanDetails,
+} = require("../domain/permissions");
 
 // ---------------------------------------------------------------------------
 // Shared SQL fragment
 // ---------------------------------------------------------------------------
 
-const PLAN_SUMMARY_FIELDS = `
+const PLAN_BASE_FIELDS = `
   p.id,
   p.title,
-  p.activity,
-  p.circle,
-  p.visibility_mode AS visibilityMode,
-  p.host_user_id AS hostUserId,
-  host.name AS hostName,
-  p.momentum_label AS momentumLabel,
-  p.momentum_tone AS momentumTone,
-  p.time_label AS timeLabel,
-  p.duration_label AS durationLabel,
+  p.host_user_id       AS hostUserId,
+  p.target_circle_id   AS targetCircleId,
+  p.visibility_mode_id AS visibilityModeId,
+  host.name            AS hostName,
+  p.momentum_label     AS momentumLabel,
+  p.time_label         AS timeLabel,
+  p.duration_label     AS durationLabel,
   p.area,
   p.summary,
-  p.visibility,
-  p.is_online AS isOnline
+  p.is_online          AS isOnline
 `;
 
 // ---------------------------------------------------------------------------
-// Shared visibility lines (used in detail view)
+// Decoration helpers
 // ---------------------------------------------------------------------------
 
-const VISIBILITY_LINES = [
-  {
-    tone: "vc-inner",
-    title: "RSVP first",
-    body: "Les détails exacts se débloquent seulement après approbation de l'hôte."
-  },
-  {
-    tone: "vc-connections",
-    title: "Circle open",
-    body: "Le cercle autorisé voit immédiatement tous les détails du plan."
-  },
-  {
-    tone: "vc-public",
-    title: "Public",
-    body: "Le plan est ouvert au-delà du cercle et ses détails sont visibles immédiatement."
-  }
-];
-
-// ---------------------------------------------------------------------------
-// Participant counts helper
-// ---------------------------------------------------------------------------
-
-function getParticipantCounts(planId) {
-  const approved = getParticipantsForPlan(planId, { approvalStatus: "approved" });
+function participantCounts(planId) {
+  const approved = getApprovedParticipants(planId);
   return {
     approvedParticipants: approved,
-    confirmedCount: approved.filter((p) => p.response === "down").length,
-    interestedCount: approved.filter((p) => p.response !== "down").length
+    confirmedCount:  approved.filter((p) => p.response === "down").length,
+    interestedCount: approved.filter((p) => p.response !== "down").length,
   };
 }
 
-// ---------------------------------------------------------------------------
-// Decoration: plan card (list view)
-// ---------------------------------------------------------------------------
-
-function decoratePlanSummary(plan, currentUser = null, index = 0) {
-  const visibilityMode = getPlanVisibilityMode(plan);
-  const canSeeFullDetails = canUserSeeFullPlanDetail(plan, currentUser);
-  const { approvedParticipants, confirmedCount, interestedCount } = getParticipantCounts(plan.id);
-  const pendingCount = getPendingApprovals(plan.id).length;
+/**
+ * Adds all derived/display fields to a raw plan row.
+ * `roles` must already be computed by the caller (avoids double-queries).
+ */
+function decoratePlan(plan, roles, currentUser) {
+  const canSeeDetails = canViewPlanDetails(roles, plan);
+  const { approvedParticipants, confirmedCount, interestedCount } = participantCounts(plan.id);
+  const isHost = plan.hostUserId === currentUser?.id;
 
   return {
     ...plan,
-    featured: index === 0,
-    muted: index === 2,
-    circle: normalizeCircle(plan.circle),
-    circleTone: normalizeCircleTone(plan.circle),
-    creatorName: currentUser?.isAdmin ? (plan.hostName || "Créateur inconnu") : "",
-    isEditable: plan.hostUserId === currentUser?.id,
-    visibilityMode,
-    visibilityModeLabel: getVisibilityModeLabel(visibilityMode),
-    visibilityModeIcon: getVisibilityModeIcon(visibilityMode),
-    visibilityModeDescription: getVisibilityModeDescription(visibilityMode),
-    detailAccess: canSeeFullDetails ? "full" : "locked",
-    ctaLabel: canSeeFullDetails ? "Voir les détails" : "RSVP pour débloquer",
-    accessNote: canSeeFullDetails ? "" : "Les détails exacts se débloquent après approbation.",
-    participants: canSeeFullDetails ? approvedParticipants : [],
+    // Circle display
+    circleLabel: circleIdToLabel(plan.targetCircleId),
+    circleTone:  circleIdToTone(plan.targetCircleId),
+    // Visibility display
+    visibilityModeLabel:       visibilityModeLabel(plan.visibilityModeId),
+    visibilityModeIcon:        visibilityModeIcon(plan.visibilityModeId),
+    visibilityModeDescription: visibilityModeDescription(plan.visibilityModeId),
+    // Access
+    detailAccess: canSeeDetails ? "full" : "locked",
+    ctaLabel:     canSeeDetails ? "Voir les détails" : "RSVP pour débloquer",
+    accessNote:   canSeeDetails ? "" : "Les détails exacts se débloquent après approbation.",
+    // Host info (admin only)
+    creatorName: currentUser?.isAdmin ? (plan.hostName ?? "Créateur inconnu") : "",
+    isEditable:  isHost || Boolean(currentUser?.isAdmin),
+    // Participants
+    participants:    canSeeDetails ? approvedParticipants : [],
     confirmedCount,
     interestedCount,
-    pendingApprovalCount: pendingCount,
-    currentUserApprovalStatus: getParticipantApprovalStatus(plan.id, currentUser?.id)
+    currentUserApprovalStatus: getApprovalStatus(plan.id, currentUser?.id),
   };
 }
 
@@ -110,45 +90,51 @@ function decoratePlanSummary(plan, currentUser = null, index = 0) {
 // ---------------------------------------------------------------------------
 
 function getPlanSummaryRows(filters = {}, currentUser = null) {
-  const plans = db.prepare(`
-    SELECT ${PLAN_SUMMARY_FIELDS}
+  const rows = db.prepare(`
+    SELECT ${PLAN_BASE_FIELDS}
     FROM plans p
     LEFT JOIN users host ON host.id = p.host_user_id
     ORDER BY p.id DESC
   `).all();
 
-  return plans
-    .filter((plan) => canUserSeePlanSummary(plan, currentUser) && matchesPlanFilters(plan, filters))
-    .map((plan, index) => decoratePlanSummary(plan, currentUser, index));
+  return rows
+    .map((plan, index) => {
+      const roles = buildRolesForUser(plan, currentUser);
+      if (!canViewPlanSummary(roles, plan)) return null;
+      if (!matchesPlanFilters(plan, filters)) return null;
+
+      return {
+        ...decoratePlan(plan, roles, currentUser),
+        featured: index === 0,
+        muted:    index === 2,
+        pendingApprovalCount: getPendingParticipants(plan.id).length,
+      };
+    })
+    .filter(Boolean);
 }
 
 function getPlanDetail(planId, currentUser = null) {
   const plan = db.prepare(`
     SELECT
-      ${PLAN_SUMMARY_FIELDS},
-      p.location_detail AS locationDetail,
-      p.address_rule AS addressRule
+      ${PLAN_BASE_FIELDS},
+      p.location_detail AS locationDetail
     FROM plans p
     LEFT JOIN users host ON host.id = p.host_user_id
     WHERE p.id = ?
   `).get(planId);
 
-  if (!plan || !canUserSeePlanSummary(plan, currentUser)) return null;
+  if (!plan) return null;
 
-  const visibilityMode = getPlanVisibilityMode(plan);
-  const canSeeFullDetails = canUserSeeFullPlanDetail(plan, currentUser);
-  const { approvedParticipants, confirmedCount, interestedCount } = getParticipantCounts(plan.id);
-  const isHost = plan.hostUserId === currentUser?.id;
-  const pendingApprovals = isHost ? getPendingApprovals(plan.id) : [];
+  const roles = buildRolesForUser(plan, currentUser);
+  if (!canViewPlanSummary(roles, plan)) return null;
 
-  const checkins = canSeeFullDetails
+  const canSeeDetails  = canViewPlanDetails(roles, plan);
+  const isHost         = plan.hostUserId === currentUser?.id;
+  const pendingApprovals = isHost ? getPendingParticipants(plan.id) : [];
+
+  const checkins = canSeeDetails
     ? db.prepare(`
-        SELECT
-          c.id,
-          c.message,
-          c.minutes_ago AS minutesAgo,
-          c.tone,
-          u.name
+        SELECT c.id, c.message, c.minutes_ago AS minutesAgo, c.tone, u.name
         FROM checkins c
         JOIN users u ON u.id = c.user_id
         WHERE c.plan_id = ?
@@ -157,116 +143,126 @@ function getPlanDetail(planId, currentUser = null) {
     : [];
 
   return {
-    ...plan,
-    circle: normalizeCircle(plan.circle),
-    circleTone: normalizeCircleTone(plan.circle),
-    creatorName: currentUser?.isAdmin ? (plan.hostName || "Créateur inconnu") : "",
-    isEditable: isHost,
-    visibilityMode,
-    visibilityModeLabel: getVisibilityModeLabel(visibilityMode),
-    visibilityModeIcon: getVisibilityModeIcon(visibilityMode),
-    visibilityModeDescription: getVisibilityModeDescription(visibilityMode),
-    detailAccess: canSeeFullDetails ? "full" : "locked",
-    currentUserApprovalStatus: getParticipantApprovalStatus(plan.id, currentUser?.id),
-    canApproveRsvps: visibilityMode === VISIBILITY_MODES.RSVP_FIRST && isHost,
+    ...decoratePlan(plan, roles, currentUser),
+    locationDetail: canSeeDetails ? plan.locationDetail : null,
+    lockedReason: plan.visibilityModeId === VISIBILITY_MODE.RSVP_FIRST && !canSeeDetails
+      ? "Ce plan est en mode RSVP first. L'hôte doit approuver ta demande avant de révéler les détails exacts."
+      : "",
+    canApproveRsvps:  plan.visibilityModeId === VISIBILITY_MODE.RSVP_FIRST && isHost,
     pendingApprovals,
-    participants: canSeeFullDetails ? approvedParticipants : [],
-    confirmedCount,
-    interestedCount,
-    lockedReason:
-      visibilityMode === VISIBILITY_MODES.RSVP_FIRST
-        ? "Ce plan est en mode RSVP first. L'hôte doit approuver ta demande avant de révéler les détails exacts."
-        : "",
-    visibilityLines: VISIBILITY_LINES,
-    checkins
+    checkins,
   };
 }
 
+// ---------------------------------------------------------------------------
+// Mutations
+// ---------------------------------------------------------------------------
+
 function createPlan(input) {
+  const targetCircleId   = input.targetCircleId   ?? circleLabelToId(input.circle) ?? CIRCLE.CONNEXIONS;
+  const visibilityModeId = input.visibilityModeId ?? VISIBILITY_MODE.CIRCLE_OPEN;
+
   const result = db.prepare(`
     INSERT INTO plans (
-      title, activity, circle, visibility_mode, host_user_id, momentum_label, momentum_tone,
-      time_label, duration_label, area, location_detail, summary, visibility, address_rule, is_online
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      title, host_user_id, target_circle_id, visibility_mode_id,
+      momentum_label, time_label, duration_label,
+      area, location_detail, summary, is_online
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `).run(
     input.title,
-    input.activity,
-    normalizeCircle(input.circle),
-    input.visibilityMode || VISIBILITY_MODES.CIRCLE_OPEN,
-    input.hostUserId || null,
-    input.momentumLabel,
-    input.momentumTone,
+    input.hostUserId ?? null,
+    targetCircleId,
+    visibilityModeId,
+    input.momentumLabel ?? "Nouveau",
     input.timeLabel,
     input.durationLabel,
     input.area,
     input.locationDetail,
     input.summary,
-    normalizeCircle(input.circle),
-    input.addressRule,
-    input.isOnline ? 1 : 0
+    input.isOnline ? 1 : 0,
   );
 
+  const { getUserById } = require("./users");
   const host = input.hostUserId ? getUserById(input.hostUserId) : null;
   return getPlanDetail(result.lastInsertRowid, host);
 }
 
 function updatePlan(planId, input, currentUser) {
-  const plan = db.prepare(`
-    SELECT id, host_user_id AS hostUserId
-    FROM plans
-    WHERE id = ?
-  `).get(planId);
+  const plan = db.prepare(
+    `SELECT id, host_user_id AS hostUserId FROM plans WHERE id = ?`
+  ).get(planId);
 
-  if (!plan || !currentUser || plan.hostUserId !== currentUser.id) return null;
+  if (!plan || !currentUser) return null;
+  if (plan.hostUserId !== currentUser.id && !currentUser.isAdmin) return null;
 
-  const circle = normalizeCircle(input.circle || currentUser.circle);
+  const targetCircleId   = input.targetCircleId   ?? circleLabelToId(input.circle);
+  const visibilityModeId = input.visibilityModeId;
 
   db.prepare(`
     UPDATE plans
-    SET
-      title = ?,
-      visibility_mode = ?,
-      time_label = ?,
-      area = ?,
-      location_detail = ?,
-      summary = ?,
-      visibility = ?,
-      circle = ?,
-      is_online = ?
+    SET title = ?, visibility_mode_id = ?, target_circle_id = ?,
+        time_label = ?, area = ?, location_detail = ?, summary = ?, is_online = ?
     WHERE id = ?
   `).run(
     input.title,
-    input.visibilityMode,
+    visibilityModeId,
+    targetCircleId,
     input.timeLabel,
     input.area,
     input.locationDetail,
     input.summary,
-    circle,
-    circle,
     input.isOnline ? 1 : 0,
-    planId
+    planId,
   );
 
   return getPlanDetail(planId, currentUser);
 }
 
 function deletePlan(planId, currentUser) {
-  const plan = db.prepare(`
-    SELECT id, host_user_id AS hostUserId
-    FROM plans
-    WHERE id = ?
-  `).get(planId);
+  const plan = db.prepare(
+    `SELECT id, host_user_id AS hostUserId FROM plans WHERE id = ?`
+  ).get(planId);
 
   if (!plan || !currentUser) return false;
   if (plan.hostUserId !== currentUser.id && !currentUser.isAdmin) return false;
 
-  return db.prepare("DELETE FROM plans WHERE id = ?").run(planId).changes > 0;
+  return db.prepare(`DELETE FROM plans WHERE id = ?`).run(planId).changes > 0;
 }
 
-module.exports = {
-  getPlanSummaryRows,
-  getPlanDetail,
-  createPlan,
-  updatePlan,
-  deletePlan
-};
+// ---------------------------------------------------------------------------
+// Filter helper (local — not shared globally)
+// ---------------------------------------------------------------------------
+
+function matchesPlanFilters(plan, filters = {}) {
+  const { filter, visibility } = filters;
+
+  // Audience filter by circle id
+  if (visibility && visibility !== "all") {
+    const targetId = Number(visibility);
+    if (!Number.isNaN(targetId) && plan.targetCircleId !== targetId) return false;
+  }
+
+  if (!filter || filter === "all") return true;
+  if (filter === "online") return Boolean(plan.isOnline);
+
+  const timeLabel = String(plan.timeLabel || "").toLowerCase();
+  if (filter === "now") {
+    return (
+      timeLabel.includes("vers") ||
+      timeLabel.includes("prochaine heure") ||
+      timeLabel.includes("30 min") ||
+      timeLabel.includes("maintenant")
+    );
+  }
+  if (filter === "tonight") {
+    return (
+      timeLabel.includes("soir") ||
+      timeLabel.includes("21h") ||
+      timeLabel.includes("20h")
+    );
+  }
+
+  return true;
+}
+
+module.exports = { getPlanSummaryRows, getPlanDetail, createPlan, updatePlan, deletePlan };

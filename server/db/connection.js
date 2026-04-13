@@ -1,9 +1,9 @@
-const fs = require("fs");
+const fs   = require("fs");
 const path = require("path");
 const Database = require("better-sqlite3");
 
 const dataDirectory = path.join(__dirname, "..", "..", "data");
-const databasePath = path.join(dataDirectory, "meetingspot.db");
+const databasePath  = path.join(dataDirectory, "meetingspot.db");
 
 fs.mkdirSync(dataDirectory, { recursive: true });
 

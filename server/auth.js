@@ -1,32 +1,23 @@
 const crypto = require("crypto");
 
-const sessions = new Map();
+const sessions   = new Map();
 const cookieName = "meetingspot_session";
 
 function parseCookies(headerValue) {
-  if (!headerValue) {
-    return {};
-  }
+  if (!headerValue) return {};
 
   return headerValue.split(";").reduce((accumulator, part) => {
     const [rawKey, ...rawValue] = part.trim().split("=");
-    if (!rawKey) {
-      return accumulator;
-    }
-
+    if (!rawKey) return accumulator;
     accumulator[rawKey] = decodeURIComponent(rawValue.join("=") || "");
     return accumulator;
   }, {});
 }
 
 function readSessionUserId(request) {
-  const cookies = parseCookies(request.headers.cookie || "");
+  const cookies      = parseCookies(request.headers.cookie || "");
   const sessionToken = cookies[cookieName];
-
-  if (!sessionToken) {
-    return null;
-  }
-
+  if (!sessionToken) return null;
   return sessions.get(sessionToken) || null;
 }
 
@@ -37,12 +28,9 @@ function createSession(userId) {
 }
 
 function clearSession(request) {
-  const cookies = parseCookies(request.headers.cookie || "");
+  const cookies      = parseCookies(request.headers.cookie || "");
   const sessionToken = cookies[cookieName];
-
-  if (sessionToken) {
-    sessions.delete(sessionToken);
-  }
+  if (sessionToken) sessions.delete(sessionToken);
 }
 
 function sessionCookieValue(token) {
@@ -58,5 +46,5 @@ module.exports = {
   createSession,
   clearSession,
   sessionCookieValue,
-  expiredSessionCookieValue
+  expiredSessionCookieValue,
 };

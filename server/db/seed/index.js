@@ -1,38 +1,42 @@
-const { db } = require("../connection");
+const { db }                                   = require("../connection");
+const { createTables }                         = require("./schema");
+const { seedUsers }                            = require("./users");
+const { seedRelationships }                    = require("./relationships");
+const { seedPlans, seedParticipants, seedCheckins } = require("./plans");
 
 // ---------------------------------------------------------------------------
 // Helpers
 // ---------------------------------------------------------------------------
 
-function columnExists(tableName, columnName) {
-  return db
-    .prepare(`PRAGMA table_info(${tableName})`)
-    .all()
-    .some((col) => col.name === columnName);
+function getUsersByName() {
+  const rows = db.prepare("SELECT id, name FROM users").all();
+  return Object.fromEntries(rows.map((u) => [u.name, u.id]));
 }
 
-function ensureColumn(tableName, columnName, definition) {
-  if (!columnExists(tableName, columnName)) {
-    db.exec(`ALTER TABLE ${tableName} ADD COLUMN ${columnName} ${definition}`);
-  }
+function getPlansByTitle() {
+  const rows = db.prepare("SELECT id, title FROM plans").all();
+  return Object.fromEntries(rows.map((p) => [p.title, p.id]));
 }
 
 // ---------------------------------------------------------------------------
-// Migrations
+// Entry point
 // ---------------------------------------------------------------------------
 
-function runMigrations() {
-  // plans
-  ensureColumn("plans", "host_user_id",       "INTEGER");
-  ensureColumn("plans", "target_circle_id",   "INTEGER NOT NULL DEFAULT 2");
-  ensureColumn("plans", "visibility_mode_id", "INTEGER NOT NULL DEFAULT 2");
+function initializeDatabase() {
+  // Clean slate — drops and recreates all tables
+  createTables();
 
-  // plan_participants
-  ensureColumn("plan_participants", "approval_status",     "TEXT DEFAULT 'approved'");
-  ensureColumn("plan_participants", "approved_by_user_id", "INTEGER");
+  seedUsers();
 
-  // users
-  ensureColumn("users", "is_admin", "INTEGER NOT NULL DEFAULT 0");
+  const byName = getUsersByName();
+
+  seedRelationships(byName);
+  seedPlans(byName);
+
+  const byTitle = getPlansByTitle();
+
+  seedParticipants(byName, byTitle);
+  seedCheckins(byName, byTitle);
 }
 
-module.exports = { runMigrations };
+module.exports = { initializeDatabase };

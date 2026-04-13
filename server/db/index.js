@@ -1,26 +1,32 @@
-const { db } = require("./connection");
-const { VISIBILITY_MODES } = require("./constants");
-const { initializeDatabase } = require("./seed");
-const { getUsers, getUserById, getCurrentUser } = require("./users");
+const { initializeDatabase }                           = require("./seed/index");
+const { VISIBILITY_MODE, CIRCLE }                      = require("./constants");
+const { db }                                           = require("./connection");
+const { getUsers, getUserById }                        = require("./users");
 const { getPlanSummaryRows, getPlanDetail, createPlan, updatePlan, deletePlan } = require("./plans");
-const { getPresenceRows, getOverview } = require("./overview");
-const { upsertRsvp, approvePlanParticipant } = require("./participants");
- 
+const { getPresenceRows, getOverview }                 = require("./overview");
+const { upsertRsvp, approvePlanParticipant }           = require("./participants");
+
+// Boot — clean schema + seed on every start
 initializeDatabase();
- 
+
 module.exports = {
-  VISIBILITY_MODES,
+  // Constants
+  VISIBILITY_MODE,
+  CIRCLE,
   db,
-  getOverview,
+  // Users
+  getUsers,
+  getUserById,
+  // Plans
   getPlanSummaryRows,
   getPlanDetail,
-  getPresenceRows,
-  getUsers,
-  getCurrentUser,
-  getUserById,
   createPlan,
   updatePlan,
   deletePlan,
+  // Overview
+  getPresenceRows,
+  getOverview,
+  // Participants
   upsertRsvp,
-  approvePlanParticipant
+  approvePlanParticipant,
 };
