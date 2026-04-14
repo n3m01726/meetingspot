@@ -55,4 +55,4 @@ function getRolesForPlan(user, plan, ctx = {}) {
   return Array.from(roles);
 }
 
-module.exports = { PLAN_ROLES, getRolesForPlan };
+module.exports = { PLAN_ROLES, getRolesForPlan, getUserRolesForPlan: getRolesForPlan };

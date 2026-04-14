@@ -1,16 +1,12 @@
-const { db }               = require("./connection");
+const { db } = require("./connection");
 const { getPlanSummaryRows } = require("./plans");
 const { getRelationshipCircleId } = require("./participants");
-const { circleIdToLabel }  = require("./constants");
-
-// ---------------------------------------------------------------------------
-// Presence
-// ---------------------------------------------------------------------------
+const { circleIdToLabel } = require("./constants");
 
 function availabilityLabel(value) {
-  if (value === "down")     return "Down";
-  if (value === "probable") return "Fort probable";
-  return "Peut-être";
+  if (value === "down") return "Fort probable";
+  if (value === "probable") return "Probable";
+  return "Indisponible";
 }
 
 function getPresenceRows() {
@@ -24,10 +20,6 @@ function getPresenceRows() {
   }));
 }
 
-// ---------------------------------------------------------------------------
-// Overview
-// ---------------------------------------------------------------------------
-
 function getOverview(filters = {}, currentUser = null) {
   const presence = getPresenceRows()
     .filter((user) => user.id !== currentUser?.id)
@@ -35,9 +27,10 @@ function getOverview(filters = {}, currentUser = null) {
       const circleId = currentUser
         ? getRelationshipCircleId(currentUser.id, user.id)
         : null;
+
       return {
         ...user,
-        relationshipCircleId:    circleId,
+        relationshipCircleId: circleId,
         relationshipCircleLabel: circleId ? circleIdToLabel(circleId) : "",
       };
     });
@@ -47,8 +40,8 @@ function getOverview(filters = {}, currentUser = null) {
   return {
     currentUser,
     stats: {
-      availableNow:  presence.filter((u) => u.availability === "down").length,
-      activePlans:   plans.length,
+      availableNow: presence.filter((u) => u.availability === "down").length,
+      activePlans: plans.length,
       averageRadius: "2 km",
     },
     presence,

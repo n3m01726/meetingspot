@@ -1,6 +1,8 @@
-import { Menu, Plus, SlidersHorizontal, Sparkles, Users } from "lucide-react";
+import { Menu, Plus, SlidersHorizontal, Sparkles, UserPlus, Users } from "lucide-react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { availabilityLabelMap, availabilityToneMap, quickFilters } from "../constants/ui.js";
+import { CIRCLES, availabilityLabelMap, availabilityToneMap, quickFilters } from "../constants/ui.js";
+import AddContactModal from "../components/AddContactModal.jsx";
 import AuthSwitcher from "../components/AuthSwitcher.jsx";
 import FiltersDrawer from "../components/FiltersDrawer.jsx";
 import IntentSheet from "../components/IntentSheet.jsx";
@@ -16,6 +18,14 @@ function HomePage() {
   const auth = useAuth();
   const overviewState = useOverview(auth.currentUser);
   const intentSheet = useIntentSheet(() => overviewState.reloadOverview(overviewState.filters), auth.currentUser);
+  const [isAddContactOpen, setIsAddContactOpen] = useState(false);
+  const [contactForm, setContactForm] = useState({
+    name: "",
+    availability: "maybe",
+    relationshipCircleId: CIRCLES.CONNEXIONS
+  });
+  const [contactError, setContactError] = useState("");
+  const [customContacts, setCustomContacts] = useState([]);
 
   if (!overviewState.overview && (overviewState.error || auth.error)) {
     return <StatePanel label={`Impossible de charger l'app : ${overviewState.error || auth.error}`} />;
@@ -26,6 +36,48 @@ function HomePage() {
   }
 
   const { overview, filters } = overviewState;
+  const presenceRows = [...customContacts, ...overview.presence];
+
+  const openAddContactModal = () => {
+    setIsAddContactOpen(true);
+    setContactError("");
+  };
+
+  const closeAddContactModal = () => {
+    setIsAddContactOpen(false);
+    setContactError("");
+    setContactForm({
+      name: "",
+      availability: "maybe",
+      relationshipCircleId: CIRCLES.CONNEXIONS
+    });
+  };
+
+  const addContact = (event) => {
+    event.preventDefault();
+    const name = String(contactForm.name || "").trim();
+    if (!name) {
+      setContactError("Le nom est requis.");
+      return;
+    }
+
+    const circleLabel = contactForm.relationshipCircleId === CIRCLES.INNER ? "Inner Circle" : "Connexions";
+    setCustomContacts((current) => ([
+      {
+        id: `custom-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+        name,
+        availability: contactForm.availability,
+        availabilityLabel: availabilityLabelMap[contactForm.availability],
+        relationshipCircleId: contactForm.relationshipCircleId,
+        relationshipCircleLabel: circleLabel,
+        imagePath: "/images/Nora.jpeg",
+        statusText: "Nouveau contact"
+      },
+      ...current
+    ]));
+
+    closeAddContactModal();
+  };
 
   return (
     <>
@@ -41,59 +93,59 @@ function HomePage() {
           await overviewState.reloadOverview(overviewState.filters);
         }}
       />
-      <div className="page-shell">
-        <header className="hero">
+      <div className="app-shell">
+        <header className="home-hero">
           <nav className="topbar">
             <div className="brand">
-              <span className="brand-mark">MS</span>
+              <span className="brand__mark">MS</span>
               <div>
                 <h1>meetingspot</h1>
-                <p>spontanéité sociale</p>
+                <p>spontaneite sociale</p>
               </div>
             </div>
-            <div className="topbar-meta">
-              <div className="inline-stats" aria-label="Statistiques globales">
+            <div className="topbar__meta">
+              <div className="stats-list" aria-label="Statistiques globales">
                 <StatItem value={overview.stats.availableNow} label="personnes dispo dans l'heure" />
                 <StatItem value={overview.stats.activePlans} label="plans actifs autour de toi" />
-                <StatItem value={overview.stats.averageRadius} label="rayon moyen des plans spontanés" />
+                <StatItem value={overview.stats.averageRadius} label="rayon moyen des plans spontanes" />
               </div>
             </div>
-            <div className="mobile-actions">
+            <div className="topbar__mobile-actions">
               <details className="mobile-menu">
                 <summary aria-label="Ouvrir le menu">
                   <Menu size={18} />
                 </summary>
-                <div className="mobile-menu-sheet">
+                <div className="mobile-menu__sheet">
                   <button type="button" onClick={() => intentSheet.openIntentSheet()}>
                     <Plus size={16} />
-                    <span>Créer un plan</span>
+                    <span>Creer un plan</span>
                   </button>
-                  <a href="#presence"><Users size={16} /><span>Qui est là ?</span></a>
-                  <a href="#plans"><Sparkles size={16} /><span>Plans spontanés</span></a>
+                  <a href="#presence"><Users size={16} /><span>Qui est la ?</span></a>
+                  <a href="#plans"><Sparkles size={16} /><span>Plans spontanes</span></a>
                 </div>
               </details>
             </div>
           </nav>
-          <div className="mobile-stats" aria-label="Statistiques globales">
+          <div className="stats-list stats-list--mobile" aria-label="Statistiques globales">
             <StatItem compact value={overview.stats.availableNow} label="dispo dans l'heure" />
             <StatItem compact value={overview.stats.activePlans} label="plans autour de toi" />
             <StatItem compact value={overview.stats.averageRadius} label="rayon moyen" />
           </div>
         </header>
 
-        <main className="content-grid">
-          <section className="panel presence-panel" id="presence">
-            <div className="section-heading compact">
+        <main className="app-shell__content">
+          <section className="panel panel--presence" id="presence">
+            <div className="section-header section-header--compact">
               <div>
-                <h3>Qui est là ?</h3>
+                <h3>Qui est la ?</h3>
               </div>
             </div>
 
             <div className="avatar-strip">
-              {overview.presence.map((person) => (
+              {presenceRows.map((person) => (
                 <article
                   key={person.id}
-                  className={`avatar-chip is-${person.availability} is-${person.seenState}`}
+                  className={`avatar-strip__chip avatar-strip__chip--${person.availability} avatar-strip__chip--${person.seenState || "fresh"}`}
                   role="button"
                   tabIndex={0}
                   onClick={() => intentSheet.openIntentSheet(person)}
@@ -104,34 +156,52 @@ function HomePage() {
                     }
                   }}
                 >
-                  <div className={`avatar-ring ${availabilityToneMap[person.availability] || "ring-blue"}`}>
-                    <img className="avatar-photo" src={person.imagePath} alt={person.name} />
+                  <div className={`avatar-strip__ring ${availabilityToneMap[person.availability] || "avatar-strip__ring--blue"}`}>
+                    <img className="avatar__photo" src={person.imagePath || "/images/Nora.jpeg"} alt={person.name} />
                   </div>
                   <strong>{person.name}</strong>
                   <span>{person.availabilityLabel || availabilityLabelMap[person.availability]}</span>
                 </article>
               ))}
+
+              <article
+                className="avatar-strip__chip avatar-strip__chip--add-contact"
+                role="button"
+                tabIndex={0}
+                onClick={openAddContactModal}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    openAddContactModal();
+                  }
+                }}
+              >
+                <div className="avatar-strip__ring avatar-strip__ring--blue avatar-strip__ring--add-contact">
+                  <span className="avatar-strip__add-icon" aria-hidden="true"><UserPlus size={30} color="#fff" /></span>
+                </div>
+                <small>Ajouter contact</small>
+              </article>
             </div>
           </section>
 
-          <section className="panel plans-panel" id="plans">
-            <div className="section-heading">
+          <section className="panel panel--plans" id="plans">
+            <div className="section-header">
               <div>
-                <h3>Plans spontanés</h3>
+                <h3>Plans spontanes</h3>
               </div>
-              <div className="plans-heading-actions">
-                <a className="filter-drawer-trigger" href="#plans-controls" aria-label="Ouvrir les filtres">
+              <div className="plans-panel__actions">
+                <a className="drawer-trigger" href="#plans-controls" aria-label="Ouvrir les filtres">
                   <SlidersHorizontal size={18} />
                 </a>
               </div>
             </div>
 
-            <div className="audience-filters" aria-label="Filtres rapides">
+            <div className="chip-group" aria-label="Filtres rapides">
               {quickFilters.map((filter) => (
                 <button
                   key={filter.key}
                   type="button"
-                  className={`filter-chip ${filters.quick === filter.key ? "active" : ""}`}
+                  className={`chip chip--filter ${filters.quick === filter.key ? "chip--active" : ""}`}
                   onClick={() => overviewState.setFilters({ ...filters, quick: filter.key })}
                 >
                   {filter.label}
@@ -139,10 +209,10 @@ function HomePage() {
               ))}
             </div>
 
-            {overviewState.error ? <p className="eyebrow">{overviewState.error}</p> : null}
-            {overview.plans.length === 0 ? <p className="eyebrow">Aucun plan pour ce filtre.</p> : null}
+            {overviewState.error ? <p className="u-eyebrow">{overviewState.error}</p> : null}
+            {overview.plans.length === 0 ? <p className="u-eyebrow">Aucun plan pour ce filtre.</p> : null}
 
-            <div className="card-grid">
+            <div className="plans-panel__grid">
               {overview.plans.map((plan) => (
                 <PlanCard
                   key={plan.id}
@@ -158,10 +228,10 @@ function HomePage() {
       <FiltersDrawer filters={filters} onFiltersChange={overviewState.setFilters} />
 
       <button
-        className="primary-action floating-cta"
+        className="btn btn--primary home__floating-cta"
         type="button"
         onClick={() => intentSheet.openIntentSheet()}
-        aria-label="Créer un plan"
+        aria-label="Creer un plan"
       >
         <Plus size={16} />
       </button>
@@ -177,6 +247,15 @@ function HomePage() {
         onFormChange={intentSheet.setForm}
         onBack={() => intentSheet.setIntentStep("intent")}
         onSubmit={intentSheet.submitPlan}
+      />
+
+      <AddContactModal
+        isOpen={isAddContactOpen}
+        form={contactForm}
+        error={contactError}
+        onClose={closeAddContactModal}
+        onFormChange={setContactForm}
+        onSubmit={addContact}
       />
     </>
   );

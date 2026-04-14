@@ -18,8 +18,8 @@ const USER_FIELDS = `
 // ---------------------------------------------------------------------------
 
 function availabilityLabel(value) {
-  if (value === "down")     return "Down";
-  if (value === "probable") return "Fort probable";
+  if (value === "down")     return "Fort probable";
+  if (value === "probable") return "Probable";
   return "Peut-être";
 }
 

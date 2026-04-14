@@ -1,0 +1,327 @@
+@use "../utils/mixins" as mixins;
+
+.intent-sheet-layer {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  align-items: end;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--duration-medium) var(--ease-standard);
+  z-index: 30;
+
+  &--open {
+    opacity: 1;
+    pointer-events: auto;
+
+    .intent-sheet {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+  &__backdrop {
+    position: absolute;
+    inset: 0;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    border-radius: 0;
+    background: rgba(16, 33, 23, 0.16);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    appearance: none;
+    -webkit-appearance: none;
+    cursor: pointer;
+  }
+}
+
+.intent-sheet {
+  position: relative;
+  z-index: 1;
+  width: min(100%, 40rem);
+  margin: 0 auto;
+  max-height: min(82vh, 42rem);
+  overflow-y: auto;
+  padding: 0.65rem 1rem 1rem;
+  background: rgba(255, 255, 255, 0.97);
+  border-top-left-radius: 1.65rem;
+  border-top-right-radius: 1.65rem;
+  transform: translateY(100%);
+  opacity: 0.98;
+  transition:
+    transform var(--duration-medium) var(--ease-standard),
+    opacity var(--duration-medium) var(--ease-standard);
+
+  &__handle {
+    width: 3rem;
+    height: 0.32rem;
+    margin: 0 auto 0.85rem;
+    border-radius: 999px;
+    background: rgba(16, 33, 23, 0.14);
+  }
+
+  &__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+
+  &__step {
+    display: none;
+    opacity: 0;
+    transform: translateY(10px);
+
+    &--active {
+      display: grid;
+      gap: 0.95rem;
+      opacity: 1;
+      transform: translateY(0);
+      animation: step-fade-in var(--duration-fast) var(--ease-standard);
+    }
+  }
+
+  &__copy h3 {
+    margin: 0.3rem 0 0;
+    font-size: 1.25rem;
+  }
+
+  &__selected-avatar {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-width: 0;
+  }
+
+  &__selected-ring {
+    padding: 4px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #2d6df6, #6ac5ff);
+  }
+
+  &__selected-image {
+    border: 2px solid rgba(255, 255, 255, 0.95);
+  }
+
+  &__selected-copy {
+    min-width: 0;
+
+    strong {
+      display: block;
+      margin-top: 0.15rem;
+      font-size: 1rem;
+    }
+  }
+
+  &__selected-meta {
+    display: block;
+    margin-top: 0.18rem;
+    color: var(--muted);
+    font-size: 0.82rem;
+  }
+
+  &__profile-icon {
+    margin-left: auto;
+    color: var(--muted);
+  }
+
+  &__intent-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.75rem;
+  }
+
+  &__intent-option {
+    display: grid;
+    justify-items: center;
+    gap: 0.45rem;
+    padding: 1rem 0.8rem;
+    border-radius: 1.15rem;
+    border: 1px solid var(--border-soft);
+    background: var(--surface-card-soft);
+    color: var(--text);
+    transition: border-color var(--duration-fast) var(--ease-standard);
+
+    &:hover,
+    &:focus-visible {
+      border-color: rgba(45, 109, 246, 0.18);
+    }
+  }
+
+  &__time-options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.55rem;
+    padding: 0.2rem;
+    border: 1px solid transparent;
+    border-radius: 1rem;
+  }
+
+  &__radio-chip {
+    position: relative;
+
+    input {
+      position: absolute;
+      opacity: 0;
+      pointer-events: none;
+
+      &:checked + span {
+        color: #fff;
+        background: linear-gradient(135deg, var(--text), #243a2e);
+      }
+    }
+
+    span {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.55rem;
+      min-height: 2.8rem;
+      padding: 0.55rem 0.85rem;
+      border-radius: 999px;
+      border: 1px solid var(--line-subtle);
+      background: var(--surface-card-soft);
+      color: var(--text);
+    }
+  }
+
+  &__participant-pill {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.55rem;
+    min-height: 2.8rem;
+    padding: 0.55rem 0.85rem;
+    border-radius: 999px;
+    border: 1px solid var(--line-subtle);
+    background: var(--surface-card-soft);
+    color: var(--text);
+  }
+
+  &__participant-name {
+    font-weight: 700;
+  }
+
+  &__actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.75rem;
+    margin-top: 0.2rem;
+
+    .btn {
+      width: 100%;
+    }
+  }
+}
+
+.visibility-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.visibility-card {
+  position: relative;
+  display: block;
+  padding: 0.95rem 1rem;
+  border-radius: var(--radius-soft-card);
+  cursor: pointer;
+
+  input {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+
+    &:checked + .visibility-card__body {
+      border-color: rgba(16, 33, 23, 0.22);
+      background: rgba(16, 33, 23, 0.03);
+    }
+  }
+
+  &__body {
+    display: grid;
+    gap: 0.35rem;
+    padding: 0.95rem 1rem;
+    border-radius: var(--radius-soft-card);
+    border: 1px solid var(--border-soft);
+    background: var(--surface-card-soft);
+    transition: border-color var(--duration-fast) var(--ease-standard), background var(--duration-fast) var(--ease-standard);
+  }
+
+  strong {
+    display: block;
+    font-size: 0.95rem;
+  }
+
+  p {
+    margin: 0;
+    color: var(--muted);
+    font-size: 0.88rem;
+    line-height: 1.45;
+  }
+
+  &--inner {
+    border-color: rgba(45, 109, 246, 0.12);
+  }
+
+  &--connections {
+    border-color: rgba(27, 163, 109, 0.12);
+  }
+
+  &--passive {
+    border-color: rgba(255, 213, 92, 0.28);
+  }
+
+  &--private {
+    border-color: rgba(255, 122, 89, 0.22);
+  }
+
+  &--ghosted {
+    border-color: rgba(148, 160, 155, 0.22);
+  }
+
+  &--blocked {
+    border-color: rgba(176, 55, 83, 0.18);
+  }
+}
+
+@keyframes step-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@include mixins.up-lg {
+  .intent-sheet-layer {
+    align-items: center;
+    justify-items: center;
+  }
+
+  .intent-sheet {
+    width: min(32rem, calc(100% - 2rem));
+    max-height: min(80vh, 44rem);
+    border-radius: 1.6rem;
+    padding: 0.85rem 1rem 1rem;
+  }
+}
+
+@include mixins.down-sm {
+  .intent-sheet {
+    width: 100%;
+    max-height: 82vh;
+
+    &__intent-grid,
+    &__actions {
+      grid-template-columns: 1fr;
+    }
+  }
+}

@@ -81,7 +81,6 @@ test("circle visibility depends on host-viewer relationship, not a global user c
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: ana.id,
     momentumLabel: "Test",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Plateau",
@@ -111,7 +110,6 @@ test("a viewer can be inner circle for one host and not for another", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: nora.id,
     momentumLabel: "Test",
-    momentumTone: "normal",
     timeLabel: "Maintenant",
     durationLabel: "1 h",
     area: "Plateau",
@@ -128,7 +126,6 @@ test("a viewer can be inner circle for one host and not for another", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: ana.id,
     momentumLabel: "Test",
-    momentumTone: "normal",
     timeLabel: "Maintenant",
     durationLabel: "1 h",
     area: "Rosemont",
@@ -169,8 +166,22 @@ test("plan detail exposes participants and checkins when access is full", () => 
 });
 
 test("plan detail is blocked when user lacks summary access", () => {
+  const nora = getUserById(1);
   const maya = getUserById(4);
-  const detail = getPlanDetail(1, maya);
+  const restrictedPlan = createPlan({
+    title: "Plan bloque pour Maya",
+    hostUserId: nora.id,
+    circle: "Inner Circle",
+    visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
+    momentumLabel: "Test",
+    timeLabel: "Maintenant",
+    durationLabel: "30 min",
+    area: "Plateau",
+    locationDetail: "Spot prive",
+    summary: "Visible seulement au inner circle de Nora.",
+    isOnline: false
+  });
+  const detail = getPlanDetail(restrictedPlan.id, maya);
 
   assert.equal(detail, null);
 });
@@ -209,7 +220,6 @@ test("role resolver keeps pending participants locked on RSVP first plans", () =
     visibilityMode: VISIBILITY_MODES.RSVP_FIRST,
     hostUserId: chris.id,
     momentumLabel: "Test",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Plateau",
@@ -239,7 +249,6 @@ test("rsvp first keeps detail locked until host approval", () => {
     visibilityMode: VISIBILITY_MODES.RSVP_FIRST,
     hostUserId: chris.id,
     momentumLabel: "Nouveau",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Plateau",
@@ -290,7 +299,6 @@ test("passing on a plan removes the participant instead of changing the RSVP sta
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: nora.id,
     momentumLabel: "Test",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "30 min",
     area: "Plateau",
@@ -326,7 +334,6 @@ test("public vibe exposes full detail beyond the base circle", () => {
     visibilityMode: VISIBILITY_MODES.PUBLIC_VIBE,
     hostUserId: nora.id,
     momentumLabel: "Public",
-    momentumTone: "normal",
     timeLabel: "Maintenant",
     durationLabel: "1 h",
     area: "Canal",
@@ -345,17 +352,17 @@ test("public vibe exposes full detail beyond the base circle", () => {
 });
 
 test("permission helpers support multi-role resolution", () => {
-  const roles = getUserRolesForPlan({ id: 1, isAdmin: true }, { hostUserId: 1, visibilityMode: VISIBILITY_MODES.RSVP_FIRST }, {
-    participantApprovalStatus: "approved",
-    relationshipMatchesCircle: true
+  const roles = getUserRolesForPlan({ id: 1, isAdmin: true }, { hostUserId: 1, targetCircleId: 2, visibilityModeId: VISIBILITY_MODES.RSVP_FIRST }, {
+    approvalStatus: "approved",
+    relationshipCircleId: 2
   });
 
   assert.ok(roles.includes(PLAN_ROLES.ADMIN));
   assert.ok(roles.includes(PLAN_ROLES.HOST));
   assert.ok(roles.includes(PLAN_ROLES.APPROVED_PARTICIPANT));
-  assert.equal(canViewPlanSummary(roles, { visibilityMode: VISIBILITY_MODES.RSVP_FIRST }), true);
-  assert.equal(canViewPlanDetails(roles, { visibilityMode: VISIBILITY_MODES.RSVP_FIRST }), true);
-  assert.equal(canApproveRsvp(roles, { visibilityMode: VISIBILITY_MODES.RSVP_FIRST }), true);
+  assert.equal(canViewPlanSummary(roles, { visibilityModeId: VISIBILITY_MODES.RSVP_FIRST }), true);
+  assert.equal(canViewPlanDetails(roles, { visibilityModeId: VISIBILITY_MODES.RSVP_FIRST }), true);
+  assert.equal(canApproveRsvp(roles, { visibilityModeId: VISIBILITY_MODES.RSVP_FIRST }), true);
   assert.equal(canCheckIn(roles), true);
   assert.equal(canEditPlan(roles), true);
 });
@@ -370,7 +377,6 @@ test("buildPlanAccessState exposes centralized permissions for approved particip
     visibilityMode: VISIBILITY_MODES.RSVP_FIRST,
     hostUserId: chris.id,
     momentumLabel: "Test",
-    momentumTone: "normal",
     timeLabel: "Demain",
     durationLabel: "1 h",
     area: "Plateau",
@@ -399,7 +405,6 @@ test("host can edit their own plan", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: chris.id,
     momentumLabel: "Nouveau",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Plateau",
@@ -437,7 +442,6 @@ test("non-host cannot edit someone else's plan", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: chris.id,
     momentumLabel: "Nouveau",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Centre-ville",
@@ -470,7 +474,6 @@ test("host can delete their own plan", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: chris.id,
     momentumLabel: "Nouveau",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Canal",
@@ -496,7 +499,6 @@ test("non-host cannot delete someone else's plan", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: chris.id,
     momentumLabel: "Nouveau",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Plateau",

@@ -1,4 +1,4 @@
-const { VISIBILITY_MODE, CIRCLE } = require("./db/constants");
+const { VISIBILITY_MODE, CIRCLE, circleLabelToId } = require("./db/constants");
 
 // ---------------------------------------------------------------------------
 // String helper
@@ -15,8 +15,9 @@ function trimmed(value, max = 120) {
 function validatePlanPayload(payload) {
   const friendName       = trimmed(payload.friendName, 80);
   const title            = trimmed(payload.title, 140);
-  const visibilityModeId = Number.parseInt(payload.visibilityModeId, 10);
-  const targetCircleId   = Number.parseInt(payload.targetCircleId,   10);
+  const visibilityModeId = Number.parseInt(payload.visibilityModeId ?? payload.visibilityMode, 10);
+  const parsedCircleId   = Number.parseInt(payload.targetCircleId ?? payload.circle, 10);
+  const targetCircleId   = Number.isNaN(parsedCircleId) ? circleLabelToId(trimmed(payload.targetCircleId ?? payload.circle, 40)) : parsedCircleId;
   const area             = trimmed(payload.area, 80);
   const venue            = trimmed(payload.venue, 120);
   const timeLabel        = trimmed(payload.timeLabel, 60)    || "Plus tard aujourd'hui";
@@ -36,7 +37,19 @@ function validatePlanPayload(payload) {
 
   return {
     ok: true,
-    value: { friendName, title, visibilityModeId, targetCircleId, area, venue, timeLabel, durationLabel, summary },
+    value: {
+      friendName,
+      title,
+      visibilityModeId,
+      targetCircleId,
+      visibilityMode: visibilityModeId,
+      circle: targetCircleId,
+      area,
+      venue,
+      timeLabel,
+      durationLabel,
+      summary
+    },
   };
 }
 
@@ -46,8 +59,9 @@ function validatePlanPayload(payload) {
 
 function validatePlanUpdatePayload(payload) {
   const title            = trimmed(payload.title, 140);
-  const visibilityModeId = Number.parseInt(payload.visibilityModeId, 10);
-  const targetCircleId   = Number.parseInt(payload.targetCircleId,   10);
+  const visibilityModeId = Number.parseInt(payload.visibilityModeId ?? payload.visibilityMode, 10);
+  const parsedCircleId   = Number.parseInt(payload.targetCircleId ?? payload.circle, 10);
+  const targetCircleId   = Number.isNaN(parsedCircleId) ? circleLabelToId(trimmed(payload.targetCircleId ?? payload.circle, 40)) : parsedCircleId;
   const area             = trimmed(payload.area, 80);
   const locationDetail   = trimmed(payload.locationDetail, 120);
   const timeLabel        = trimmed(payload.timeLabel, 60);
@@ -66,7 +80,17 @@ function validatePlanUpdatePayload(payload) {
 
   return {
     ok: true,
-    value: { title, visibilityModeId, targetCircleId, area, locationDetail, timeLabel, summary },
+    value: {
+      title,
+      visibilityModeId,
+      targetCircleId,
+      visibilityMode: visibilityModeId,
+      circle: targetCircleId,
+      area,
+      locationDetail,
+      timeLabel,
+      summary
+    },
   };
 }
 

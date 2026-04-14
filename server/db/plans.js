@@ -18,7 +18,13 @@ const {
 const {
   canViewPlanSummary,
   canViewPlanDetails,
+  canApproveRsvp,
+  canCheckIn,
+  canEditPlan,
+  canDeletePlan,
+  canRsvpToPlan,
 } = require("../domain/permissions");
+const { computePlanMomentum } = require("../utils/planMomentum");
 
 // ---------------------------------------------------------------------------
 // Shared SQL fragment
@@ -59,14 +65,27 @@ function participantCounts(planId) {
 function decoratePlan(plan, roles, currentUser) {
   const canSeeDetails = canViewPlanDetails(roles, plan);
   const { approvedParticipants, confirmedCount, interestedCount } = participantCounts(plan.id);
+  const { momentumTone } = computePlanMomentum(plan.id);
   const isHost = plan.hostUserId === currentUser?.id;
+  const permissions = {
+    canViewSummary: canViewPlanSummary(roles, plan),
+    canViewDetails: canSeeDetails,
+    canApproveRsvps: canApproveRsvp(roles, plan),
+    canCheckIn: canCheckIn(roles),
+    canEditPlan: canEditPlan(roles),
+    canDeletePlan: canDeletePlan(roles),
+    canRsvp: canRsvpToPlan(roles, plan),
+  };
 
   return {
     ...plan,
+    momentumTone,
     // Circle display
+    circle:      circleIdToLabel(plan.targetCircleId),
     circleLabel: circleIdToLabel(plan.targetCircleId),
     circleTone:  circleIdToTone(plan.targetCircleId),
     // Visibility display
+    visibilityMode:            plan.visibilityModeId,
     visibilityModeLabel:       visibilityModeLabel(plan.visibilityModeId),
     visibilityModeIcon:        visibilityModeIcon(plan.visibilityModeId),
     visibilityModeDescription: visibilityModeDescription(plan.visibilityModeId),
@@ -77,6 +96,8 @@ function decoratePlan(plan, roles, currentUser) {
     // Host info (admin only)
     creatorName: currentUser?.isAdmin ? (plan.hostName ?? "Créateur inconnu") : "",
     isEditable:  isHost || Boolean(currentUser?.isAdmin),
+    viewerRoles: roles,
+    permissions,
     // Participants
     participants:    canSeeDetails ? approvedParticipants : [],
     confirmedCount,
@@ -130,7 +151,7 @@ function getPlanDetail(planId, currentUser = null) {
 
   const canSeeDetails  = canViewPlanDetails(roles, plan);
   const isHost         = plan.hostUserId === currentUser?.id;
-  const pendingApprovals = isHost ? getPendingParticipants(plan.id) : [];
+  const pendingApprovals = (isHost || Boolean(currentUser?.isAdmin)) ? getPendingParticipants(plan.id) : [];
 
   const checkins = canSeeDetails
     ? db.prepare(`
@@ -144,11 +165,14 @@ function getPlanDetail(planId, currentUser = null) {
 
   return {
     ...decoratePlan(plan, roles, currentUser),
+    addressRule: canSeeDetails
+      ? "Le lieu exact se confirme une fois le plan lancé."
+      : "",
     locationDetail: canSeeDetails ? plan.locationDetail : null,
     lockedReason: plan.visibilityModeId === VISIBILITY_MODE.RSVP_FIRST && !canSeeDetails
       ? "Ce plan est en mode RSVP first. L'hôte doit approuver ta demande avant de révéler les détails exacts."
       : "",
-    canApproveRsvps:  plan.visibilityModeId === VISIBILITY_MODE.RSVP_FIRST && isHost,
+    canApproveRsvps:  plan.visibilityModeId === VISIBILITY_MODE.RSVP_FIRST && (isHost || Boolean(currentUser?.isAdmin)),
     pendingApprovals,
     checkins,
   };
@@ -160,7 +184,7 @@ function getPlanDetail(planId, currentUser = null) {
 
 function createPlan(input) {
   const targetCircleId   = input.targetCircleId   ?? circleLabelToId(input.circle) ?? CIRCLE.CONNEXIONS;
-  const visibilityModeId = input.visibilityModeId ?? VISIBILITY_MODE.CIRCLE_OPEN;
+  const visibilityModeId = input.visibilityModeId ?? input.visibilityMode ?? VISIBILITY_MODE.CIRCLE_OPEN;
 
   const result = db.prepare(`
     INSERT INTO plans (
@@ -196,7 +220,7 @@ function updatePlan(planId, input, currentUser) {
   if (plan.hostUserId !== currentUser.id && !currentUser.isAdmin) return null;
 
   const targetCircleId   = input.targetCircleId   ?? circleLabelToId(input.circle);
-  const visibilityModeId = input.visibilityModeId;
+  const visibilityModeId = input.visibilityModeId ?? input.visibilityMode;
 
   db.prepare(`
     UPDATE plans

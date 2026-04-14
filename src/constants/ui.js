@@ -4,13 +4,20 @@ import {
   Footprints,
   Gamepad2,
   Laptop2,
-  Sparkles
+  Sparkles,  CircleCheck,
+  CircleHelp,
+  CircleX,
 } from "lucide-react";
 
 export const VISIBILITY_MODES = {
-  RSVP_FIRST: "rsvp_first",
-  CIRCLE_OPEN: "circle_open",
-  PUBLIC_VIBE: "public_vibe"
+  RSVP_FIRST: 1,
+  CIRCLE_OPEN: 2,
+  PUBLIC_VIBE: 3
+};
+
+export const CIRCLES = {
+  INNER: 1,
+  CONNEXIONS: 2
 };
 
 export const toneClassMap = {
@@ -20,15 +27,39 @@ export const toneClassMap = {
 };
 
 export const availabilityToneMap = {
-  down: "ring-green",
-  probable: "ring-yellow",
-  maybe: "ring-gray"
+  down: "avatar-strip__ring--green",
+  probable: "avatar-strip__ring--yellow",
+  maybe: "avatar-strip__ring--gray"
 };
 
 export const availabilityLabelMap = {
-  down: "Down",
-  probable: "Fort probable",
-  maybe: "Peut-être"
+  down: "J’en suis",
+  probable: "Probable",
+  maybe: "Indisponible"
+};
+
+export const availabilityMap = {
+  down: {
+    label: "J’en suis",
+    icon: CircleCheck,
+    className: "btn--primary-icon",
+  },
+  maybe: {
+    label: "Peut-être",
+    icon: CircleHelp,
+    className: "btn--secondary-icon",
+  },
+  "not-here": {
+    label: "Indisponible",
+    icon: CircleX,
+    className: "btn--ghost-icon",
+  },
+};
+
+export const responseLabelMap = {
+  down: "J’en suis",
+  maybe: "Peut-être",
+  nothere: "Indisponible"
 };
 
 export const intentOptions = [
@@ -49,9 +80,8 @@ export const quickFilters = [
 
 export const visibilityFilters = [
   { key: "all", label: "Tous les cercles", tone: "" },
-  { key: "Inner Circle", label: "Inner Circle", tone: "inner" },
-  { key: "Inner Circle + Connexions", label: "Inner + Connexions", tone: "" },
-  { key: "Connexions", label: "Connexions", tone: "connections" }
+  { key: String(CIRCLES.INNER), label: "Inner Circle", tone: "inner" },
+  { key: String(CIRCLES.CONNEXIONS), label: "Connexions", tone: "connections" }
 ];
 
 export const visibilityModeOptions = [
