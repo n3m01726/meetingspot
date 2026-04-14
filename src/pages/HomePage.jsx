@@ -12,6 +12,7 @@ import StatItem from "../components/StatItem.jsx";
 import useAuth from "../hooks/useAuth.js";
 import useIntentSheet from "../hooks/useIntentSheet.js";
 import useOverview from "../hooks/useOverview.js";
+import AvatarPopover from "../components/AvatarPopover.jsx";
 
 function HomePage() {
   const navigate = useNavigate();
@@ -142,27 +143,26 @@ function HomePage() {
             </div>
 
             <div className="avatar-strip">
-              {presenceRows.map((person) => (
-                <article
-                  key={person.id}
-                  className={`avatar-strip__chip avatar-strip__chip--${person.availability} avatar-strip__chip--${person.seenState || "fresh"}`}
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => intentSheet.openIntentSheet(person)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      intentSheet.openIntentSheet(person);
-                    }
-                  }}
-                >
-                  <div className={`avatar-strip__ring ${availabilityToneMap[person.availability] || "avatar-strip__ring--blue"}`}>
-                    <img className="avatar__photo" src={person.imagePath || "/images/Nora.jpeg"} alt={person.name} />
-                  </div>
-                  <strong>{person.name}</strong>
-                  <span>{person.availabilityLabel || availabilityLabelMap[person.availability]}</span>
-                </article>
-              ))}
+            {presenceRows.map((person) => (
+  <AvatarPopover
+    key={person.id}
+    person={person}
+    currentUser={auth.currentUser}
+    onCreatePlan={(p) => intentSheet.openIntentSheet(p)}
+  >
+    <article
+      className={`avatar-strip__chip avatar-strip__chip--${person.availability} avatar-strip__chip--${person.seenState || "fresh"}`}
+      role="button"
+      tabIndex={-1} // le focus est géré par AvatarPopover
+    >
+      <div className={`avatar-strip__ring ${availabilityToneMap[person.availability] || "avatar-strip__ring--blue"}`}>
+        <img className="avatar__photo" src={person.imagePath || "/images/Nora.jpeg"} alt={person.name} />
+      </div>
+      <strong>{person.name}</strong>
+      <span>{person.availabilityLabel || availabilityLabelMap[person.availability]}</span>
+    </article>
+  </AvatarPopover>
+))}
 
               <article
                 className="avatar-strip__chip avatar-strip__chip--add-contact"

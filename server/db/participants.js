@@ -1,15 +1,23 @@
-const { db }          = require("./connection");
+/**
+ * server/db/participants.js
+ *
+ * Gestion des participants, RSVP et approbations.
+ * N'importe plus plans.js directement — passe par planBaseQueries + un
+ * callback injecté (getPlanDetail) pour éviter la dépendance circulaire.
+ */
+
+const { db }              = require("./connection");
 const { VISIBILITY_MODE } = require("./constants");
 const { getRolesForPlan } = require("../domain/roles");
 const { canViewPlanSummary } = require("../domain/permissions");
+const { getPlanForAccessCheck } = require("./queries/planBaseQueries");
 
 // ---------------------------------------------------------------------------
 // Internal helpers
 // ---------------------------------------------------------------------------
 
 /**
- * Returns the relationship circle_id between owner and member.
- * Returns null when no relationship row exists.
+ * Retourne le circle_id de la relation entre owner et member, ou null.
  */
 function getRelationshipCircleId(ownerUserId, memberUserId) {
   if (!ownerUserId || !memberUserId || ownerUserId === memberUserId) return null;
@@ -41,7 +49,7 @@ function buildRolesForUser(plan, user) {
 }
 
 // ---------------------------------------------------------------------------
-// Participant list
+// Participant lists
 // ---------------------------------------------------------------------------
 
 function getApprovedParticipants(planId) {
@@ -59,10 +67,7 @@ function getApprovedParticipants(planId) {
     ORDER BY CASE pp.response WHEN 'down' THEN 1 WHEN 'probable' THEN 2 ELSE 3 END, u.name
   `).all(planId);
 
-  return rows.map((row) => ({
-    ...row,
-    isApproved: true,
-  }));
+  return rows.map((row) => ({ ...row, isApproved: true }));
 }
 
 function getPendingParticipants(planId) {
@@ -85,28 +90,35 @@ function getPendingParticipants(planId) {
 
 // ---------------------------------------------------------------------------
 // RSVP
+//
+// `getPlanDetail` est injecté par plans.js à l'initialisation pour éviter
+// le require circulaire. Voir planParticipantsInit() ci-dessous.
 // ---------------------------------------------------------------------------
 
-function upsertRsvp(planId, userId, response, currentUser = null) {
-  const plan = db.prepare(`
-    SELECT id, host_user_id AS hostUserId, target_circle_id AS targetCircleId,
-           visibility_mode_id AS visibilityModeId
-    FROM plans WHERE id = ?
-  `).get(planId);
+let _getPlanDetail = null;
 
+/**
+ * Appelé une seule fois par plans.js après que les deux modules sont chargés.
+ * Injecte la référence à getPlanDetail sans créer de cycle au moment du require.
+ */
+function initPlanDetailResolver(fn) {
+  _getPlanDetail = fn;
+}
+
+function upsertRsvp(planId, userId, response, currentUser = null) {
+  const plan = getPlanForAccessCheck(planId);
   if (!plan) return null;
 
   const roles = buildRolesForUser(plan, currentUser);
   if (!canViewPlanSummary(roles, plan)) return null;
 
-  // Pass response → remove participant row
+  // Pass → supprime la ligne participant
   if (response === "pass") {
     db.prepare(`DELETE FROM plan_participants WHERE plan_id = ? AND user_id = ?`).run(planId, userId);
-    const { getPlanDetail } = require("./plans");
-    return getPlanDetail(planId, currentUser);
+    return _getPlanDetail(planId, currentUser);
   }
 
-  // RSVP_FIRST plans start as pending unless the user is the host
+  // RSVP_FIRST : pending sauf si l'utilisateur est l'hôte
   const approvalStatus =
     plan.visibilityModeId === VISIBILITY_MODE.RSVP_FIRST && plan.hostUserId !== userId
       ? "pending"
@@ -119,7 +131,6 @@ function upsertRsvp(planId, userId, response, currentUser = null) {
     VALUES (?, ?, ?, '', ?, ?)
     ON CONFLICT(plan_id, user_id) DO UPDATE SET
       response = excluded.response,
-      -- Don't downgrade an already-approved participant
       approval_status = CASE
         WHEN plan_participants.approval_status = 'approved' THEN 'approved'
         ELSE excluded.approval_status
@@ -130,8 +141,7 @@ function upsertRsvp(planId, userId, response, currentUser = null) {
       END
   `).run(planId, userId, response, approvalStatus, approvedByUserId);
 
-  const { getPlanDetail } = require("./plans");
-  return getPlanDetail(planId, currentUser);
+  return _getPlanDetail(planId, currentUser);
 }
 
 // ---------------------------------------------------------------------------
@@ -160,8 +170,7 @@ function approvePlanParticipant(planId, hostUserId, participantUserId) {
   `).run(hostUserId, planId, participantUserId);
 
   const { getUserById } = require("./users");
-  const { getPlanDetail } = require("./plans");
-  return getPlanDetail(planId, getUserById(hostUserId));
+  return _getPlanDetail(planId, getUserById(hostUserId));
 }
 
 module.exports = {
@@ -172,4 +181,5 @@ module.exports = {
   buildRolesForUser,
   upsertRsvp,
   approvePlanParticipant,
+  initPlanDetailResolver,
 };

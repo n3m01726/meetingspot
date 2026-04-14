@@ -14,7 +14,7 @@ const {
   canDeletePlan,
   canRsvpToPlan,
 } = require("../domain/permissions");
-
+const { getPublicProfile, getSelfProfile, updateUserSettings } = require("./profiles");
 // Boot — clean schema + seed on every start
 initializeDatabase();
 
@@ -56,4 +56,9 @@ module.exports = {
   // Participants
   upsertRsvp,
   approvePlanParticipant,
+
+  // Profiles
+  getPublicProfile,
+getSelfProfile,
+updateUserSettings,
 };

@@ -1,7 +1,16 @@
-const { db }                                   = require("../connection");
-const { createTables }                         = require("./schema");
-const { seedUsers }                            = require("./users");
-const { seedRelationships }                    = require("./relationships");
+/**
+ * server/db/seed/index.js
+ *
+ * En développement (ou CI), la base est recréée à chaque démarrage.
+ * En production, positionner SKIP_SEED=true pour conserver les données.
+ *
+ *   SKIP_SEED=true node server/index.js
+ */
+
+const { db }                                        = require("../connection");
+const { createTables }                              = require("./schema");
+const { seedUsers }                                 = require("./users");
+const { seedRelationships }                         = require("./relationships");
 const { seedPlans, seedParticipants, seedCheckins } = require("./plans");
 
 // ---------------------------------------------------------------------------
@@ -23,9 +32,14 @@ function getPlansByTitle() {
 // ---------------------------------------------------------------------------
 
 function initializeDatabase() {
-  // Clean slate — drops and recreates all tables
-  createTables();
+  if (process.env.SKIP_SEED === "true") {
+    console.log("[db] SKIP_SEED=true — seed ignoré, données existantes conservées.");
+    return;
+  }
 
+  console.log("[db] Recréation du schéma et seed des données...");
+
+  createTables();
   seedUsers();
 
   const byName = getUsersByName();
@@ -37,6 +51,8 @@ function initializeDatabase() {
 
   seedParticipants(byName, byTitle);
   seedCheckins(byName, byTitle);
+
+  console.log("[db] Seed terminé.");
 }
 
 module.exports = { initializeDatabase };

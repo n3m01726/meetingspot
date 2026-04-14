@@ -1,3 +1,13 @@
+/**
+ * server/db/plans.js
+ *
+ * Requêtes sur les plans — création, lecture, mise à jour, suppression.
+ *
+ * La dépendance circulaire avec participants.js est résolue via injection :
+ * on appelle `initPlanDetailResolver(getPlanDetail)` après la définition
+ * de la fonction, ce qui évite les `require()` lazy dans le corps des fonctions.
+ */
+
 const { db } = require("./connection");
 const {
   VISIBILITY_MODE,
@@ -14,6 +24,7 @@ const {
   getPendingParticipants,
   getApprovalStatus,
   buildRolesForUser,
+  initPlanDetailResolver,
 } = require("./participants");
 const {
   canViewPlanSummary,
@@ -25,25 +36,7 @@ const {
   canRsvpToPlan,
 } = require("../domain/permissions");
 const { computePlanMomentum } = require("../utils/planMomentum");
-
-// ---------------------------------------------------------------------------
-// Shared SQL fragment
-// ---------------------------------------------------------------------------
-
-const PLAN_BASE_FIELDS = `
-  p.id,
-  p.title,
-  p.host_user_id       AS hostUserId,
-  p.target_circle_id   AS targetCircleId,
-  p.visibility_mode_id AS visibilityModeId,
-  host.name            AS hostName,
-  p.momentum_label     AS momentumLabel,
-  p.time_label         AS timeLabel,
-  p.duration_label     AS durationLabel,
-  p.area,
-  p.summary,
-  p.is_online          AS isOnline
-`;
+const { PLAN_BASE_FIELDS } = require("./queries/planBaseQueries");
 
 // ---------------------------------------------------------------------------
 // Decoration helpers
@@ -58,47 +51,38 @@ function participantCounts(planId) {
   };
 }
 
-/**
- * Adds all derived/display fields to a raw plan row.
- * `roles` must already be computed by the caller (avoids double-queries).
- */
 function decoratePlan(plan, roles, currentUser) {
   const canSeeDetails = canViewPlanDetails(roles, plan);
   const { approvedParticipants, confirmedCount, interestedCount } = participantCounts(plan.id);
   const { momentumTone } = computePlanMomentum(plan.id);
   const isHost = plan.hostUserId === currentUser?.id;
   const permissions = {
-    canViewSummary: canViewPlanSummary(roles, plan),
-    canViewDetails: canSeeDetails,
+    canViewSummary:  canViewPlanSummary(roles, plan),
+    canViewDetails:  canSeeDetails,
     canApproveRsvps: canApproveRsvp(roles, plan),
-    canCheckIn: canCheckIn(roles),
-    canEditPlan: canEditPlan(roles),
-    canDeletePlan: canDeletePlan(roles),
-    canRsvp: canRsvpToPlan(roles, plan),
+    canCheckIn:      canCheckIn(roles),
+    canEditPlan:     canEditPlan(roles),
+    canDeletePlan:   canDeletePlan(roles),
+    canRsvp:         canRsvpToPlan(roles, plan),
   };
 
   return {
     ...plan,
     momentumTone,
-    // Circle display
     circle:      circleIdToLabel(plan.targetCircleId),
     circleLabel: circleIdToLabel(plan.targetCircleId),
     circleTone:  circleIdToTone(plan.targetCircleId),
-    // Visibility display
     visibilityMode:            plan.visibilityModeId,
     visibilityModeLabel:       visibilityModeLabel(plan.visibilityModeId),
     visibilityModeIcon:        visibilityModeIcon(plan.visibilityModeId),
     visibilityModeDescription: visibilityModeDescription(plan.visibilityModeId),
-    // Access
     detailAccess: canSeeDetails ? "full" : "locked",
     ctaLabel:     canSeeDetails ? "Voir les détails" : "RSVP pour débloquer",
     accessNote:   canSeeDetails ? "" : "Les détails exacts se débloquent après approbation.",
-    // Host info (admin only)
-    creatorName: currentUser?.isAdmin ? (plan.hostName ?? "Créateur inconnu") : "",
-    isEditable:  isHost || Boolean(currentUser?.isAdmin),
-    viewerRoles: roles,
+    creatorName:  currentUser?.isAdmin ? (plan.hostName ?? "Créateur inconnu") : "",
+    isEditable:   isHost || Boolean(currentUser?.isAdmin),
+    viewerRoles:  roles,
     permissions,
-    // Participants
     participants:    canSeeDetails ? approvedParticipants : [],
     confirmedCount,
     interestedCount,
@@ -149,9 +133,11 @@ function getPlanDetail(planId, currentUser = null) {
   const roles = buildRolesForUser(plan, currentUser);
   if (!canViewPlanSummary(roles, plan)) return null;
 
-  const canSeeDetails  = canViewPlanDetails(roles, plan);
-  const isHost         = plan.hostUserId === currentUser?.id;
-  const pendingApprovals = (isHost || Boolean(currentUser?.isAdmin)) ? getPendingParticipants(plan.id) : [];
+  const canSeeDetails    = canViewPlanDetails(roles, plan);
+  const isHost           = plan.hostUserId === currentUser?.id;
+  const pendingApprovals = (isHost || Boolean(currentUser?.isAdmin))
+    ? getPendingParticipants(plan.id)
+    : [];
 
   const checkins = canSeeDetails
     ? db.prepare(`
@@ -177,6 +163,13 @@ function getPlanDetail(planId, currentUser = null) {
     checkins,
   };
 }
+
+// ---------------------------------------------------------------------------
+// Injecter getPlanDetail dans participants pour casser la circularité.
+// Ce appel se fait une seule fois, au moment où plans.js est chargé par Node.
+// participants.js est déjà résolu à ce stade, donc pas de problème d'ordre.
+// ---------------------------------------------------------------------------
+initPlanDetailResolver(getPlanDetail);
 
 // ---------------------------------------------------------------------------
 // Mutations
@@ -254,13 +247,12 @@ function deletePlan(planId, currentUser) {
 }
 
 // ---------------------------------------------------------------------------
-// Filter helper (local — not shared globally)
+// Filter helper
 // ---------------------------------------------------------------------------
 
 function matchesPlanFilters(plan, filters = {}) {
   const { filter, visibility } = filters;
 
-  // Audience filter by circle id
   if (visibility && visibility !== "all") {
     const targetId = Number(visibility);
     if (!Number.isNaN(targetId) && plan.targetCircleId !== targetId) return false;
