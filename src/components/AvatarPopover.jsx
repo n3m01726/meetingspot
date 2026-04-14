@@ -4,27 +4,14 @@ import { Plus, UserRound } from "lucide-react";
 import { fetchJson } from "../lib/api.js";
 import { availabilityToneMap } from "../constants/ui.js";
 
-/**
- * AvatarPopover
- *
- * Wrapper autour d'un avatar qui affiche une popover mini-profil au clic.
- * Les données sont chargées à la demande (lazy) pour ne pas surcharger
- * le chargement initial de la page.
- *
- * Props :
- *   person        — objet présence de base (id, name, imagePath, availability…)
- *   currentUser   — utilisateur connecté (peut être null)
- *   onCreatePlan  — callback (person) → ouvre l'IntentSheet avec cette personne
- *   children      — le trigger (l'avatar lui-même)
- */
 function AvatarPopover({ person, currentUser, onCreatePlan, children }) {
-  const navigate          = useNavigate();
-  const [open, setOpen]   = useState(false);
+  const navigate             = useNavigate();
+  const [open, setOpen]      = useState(false);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(false);
-  const containerRef      = useRef(null);
+  const containerRef         = useRef(null);
 
-  // Ferme la popover si on clique dehors
+  // Ferme si clic en dehors
   useEffect(() => {
     if (!open) return;
     const handler = (event) => {
@@ -65,26 +52,33 @@ function AvatarPopover({ person, currentUser, onCreatePlan, children }) {
     }
   };
 
-  const isSelf = currentUser?.id === person.id;
+  const isSelf         = currentUser?.id === person.id;
   const displayProfile = profile ?? person;
-  const ringClass = availabilityToneMap[person.availability] || "avatar-strip__ring--gray";
+  const ringClass      = availabilityToneMap[person.availability] || "avatar-strip__ring--gray";
 
   return (
     <div className="avatar-popover-wrapper" ref={containerRef}>
-      {/* Trigger */}
+      {/*
+        Trigger — onClick directement sur ce div, sans display:contents.
+        L'article enfant garde son tabIndex=-1, le focus est géré ici.
+      */}
       <div
         className="avatar-popover-trigger"
         onClick={handleClick}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" || e.key === " ") {
+            e.preventDefault();
+            handleClick(e);
+          }
+        }}
         role="button"
         tabIndex={0}
         aria-expanded={open}
         aria-haspopup="dialog"
-        onKeyDown={(e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); handleClick(e); } }}
       >
         {children}
       </div>
 
-      {/* Popover */}
       {open && (
         <div
           className="avatar-popover"
@@ -92,11 +86,9 @@ function AvatarPopover({ person, currentUser, onCreatePlan, children }) {
           aria-label={`Profil de ${person.name}`}
           aria-modal="false"
         >
-          {/* Banner de couleur selon disponibilité */}
           <div className={`avatar-popover__banner avatar-popover__banner--${person.availability}`} />
 
           <div className="avatar-popover__body">
-            {/* Avatar large */}
             <div className={`avatar-popover__ring ${ringClass}`}>
               <img
                 className="avatar__photo avatar__photo--lg"
@@ -105,7 +97,6 @@ function AvatarPopover({ person, currentUser, onCreatePlan, children }) {
               />
             </div>
 
-            {/* Infos */}
             <div className="avatar-popover__info">
               <strong className="avatar-popover__name">{displayProfile.name}</strong>
 
@@ -114,12 +105,10 @@ function AvatarPopover({ person, currentUser, onCreatePlan, children }) {
               )}
 
               <div className="avatar-popover__meta-row">
-                {/* Disponibilité */}
                 <span className={`avatar-popover__avail-chip avatar-popover__avail-chip--${person.availability}`}>
                   {displayProfile.availabilityLabel || person.availabilityLabel}
                 </span>
 
-                {/* Cercle de relation (si viewer a une relation) */}
                 {!isSelf && displayProfile.relationshipCircleLabel && (
                   <span className="avatar-popover__circle-chip">
                     {displayProfile.relationshipCircleLabel}
@@ -128,7 +117,6 @@ function AvatarPopover({ person, currentUser, onCreatePlan, children }) {
               </div>
             </div>
 
-            {/* Plans actifs (si chargés) */}
             {loading && (
               <p className="avatar-popover__loading">Chargement...</p>
             )}
@@ -150,7 +138,6 @@ function AvatarPopover({ person, currentUser, onCreatePlan, children }) {
               </div>
             )}
 
-            {/* Actions */}
             <div className="avatar-popover__actions">
               {!isSelf && (
                 <button
