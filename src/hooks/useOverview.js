@@ -24,7 +24,10 @@ function useOverview(currentUser) {
     visibility: "all"
   });
 
-  const loadOverview = useCallback(async (nextFilters = filters) => {
+  // `loadOverview` prend toujours les filtres en paramètre explicite —
+  // plus de capture de `filters` dans la closure, donc pas de double-appel
+  // quand `filters` et `currentUser` changent simultanément.
+  const loadOverview = useCallback(async (nextFilters) => {
     try {
       setError("");
       const nextOverview = await fetchJson(`/api/overview${buildOverviewQuery(nextFilters)}`);
@@ -32,11 +35,11 @@ function useOverview(currentUser) {
     } catch (nextError) {
       setError(nextError.message);
     }
-  }, [filters]);
+  }, []); // pas de dépendances — la fonction est stable pour toute la durée de vie du hook
 
   useEffect(() => {
     loadOverview(filters);
-  }, [filters, currentUser?.id]);
+  }, [filters, currentUser?.id, loadOverview]);
 
   const handleRsvp = async (planId, response) => {
     if (!currentUser?.id) {

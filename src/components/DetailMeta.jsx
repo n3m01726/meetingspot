@@ -1,7 +1,7 @@
 function DetailMeta({ icon, label, value, copy }) {
   return (
-    <article className="detail-meta-card">
-      <span className="detail-meta-label">
+    <article className="meta-card">
+      <span className="meta-card__label">
         {icon}
         <span>{label}</span>
       </span>

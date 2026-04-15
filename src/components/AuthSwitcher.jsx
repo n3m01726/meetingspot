@@ -1,8 +1,8 @@
 function AuthSwitcher({ currentUser, users, onLogin, onLogout }) {
   return (
-    <div className="audience-filters" aria-label="Session utilisateur">
+    <div className="chip-group" aria-label="Session utilisateur">
       <select
-        className="intent-visibility-select"
+        className="auth-switcher__select"
         value={currentUser?.id || ""}
         onChange={(event) => {
           const userId = Number.parseInt(event.target.value, 10);
@@ -14,12 +14,12 @@ function AuthSwitcher({ currentUser, users, onLogin, onLogout }) {
         <option value="">Choisir un profil</option>
         {users.map((user) => (
           <option key={user.id} value={user.id}>
-            {`${user.name}${user.isAdmin ? " (admin)" : ""} • ${user.circle}`}
+            {`${user.name}${user.isAdmin ? " (admin)" : ""} • ${user.availabilityLabel || user.availability}`}
           </option>
         ))}
       </select>
       {currentUser ? (
-        <button className="ghost-button strong" type="button" onClick={onLogout}>
+        <button className="btn btn--ghost btn--strong" type="button" onClick={onLogout}>
           Se déconnecter
         </button>
       ) : null}

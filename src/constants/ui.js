@@ -4,13 +4,20 @@ import {
   Footprints,
   Gamepad2,
   Laptop2,
-  Sparkles
+  Sparkles,  CircleCheck,
+  CircleHelp,
+  CircleX,
 } from "lucide-react";
 
 export const VISIBILITY_MODES = {
-  RSVP_FIRST: "rsvp_first",
-  CIRCLE_OPEN: "circle_open",
-  PUBLIC_VIBE: "public_vibe"
+  RSVP_FIRST: 1,
+  CIRCLE_OPEN: 2,
+  PUBLIC_VIBE: 3
+};
+
+export const CIRCLES = {
+  INNER: 1,
+  CONNEXIONS: 2
 };
 
 export const toneClassMap = {
@@ -20,15 +27,32 @@ export const toneClassMap = {
 };
 
 export const availabilityToneMap = {
-  down: "ring-green",
-  probable: "ring-yellow",
-  maybe: "ring-gray"
+  down: "avatar-strip__ring--green",
+  probable: "avatar-strip__ring--yellow",
+  maybe: "avatar-strip__ring--gray"
 };
 
 export const availabilityLabelMap = {
-  down: "Down",
-  probable: "Fort probable",
-  maybe: "Peut-être"
+  down: "I'm in!",
+  probable: "Probably"
+};
+
+export const availabilityMap = {
+  down: {
+    label: "I'm in!",
+    icon: CircleCheck,
+    className: "btn--primary-icon",
+  },
+  maybe: {
+    label: "maybe",
+    icon: CircleHelp,
+    className: "btn--secondary-icon",
+  }
+};
+
+export const responseLabelMap = {
+  down: "I'm in!",
+  maybe: "maybe"
 };
 
 export const intentOptions = [
@@ -41,29 +65,28 @@ export const intentOptions = [
 ];
 
 export const quickFilters = [
-  { key: "all", label: "Tous" },
-  { key: "now", label: "Maintenant" },
-  { key: "tonight", label: "Ce soir" },
-  { key: "online", label: "En ligne" }
+  { key: "all", label: "all" },
+  { key: "now", label: "now" },
+  { key: "tonight", label: "tonight" },
+  { key: "online", label: "online now" }
 ];
 
 export const visibilityFilters = [
-  { key: "all", label: "Tous les cercles", tone: "" },
-  { key: "Inner Circle", label: "Inner Circle", tone: "inner" },
-  { key: "Inner Circle + Connexions", label: "Inner + Connexions", tone: "" },
-  { key: "Connexions", label: "Connexions", tone: "connections" }
+  { key: "all", label: "All circles", tone: "" },
+  { key: String(CIRCLES.INNER), label: "Inner Circle", tone: "inner" },
+  { key: String(CIRCLES.CONNEXIONS), label: "Connections", tone: "connections" }
 ];
 
 export const visibilityModeOptions = [
   {
     key: VISIBILITY_MODES.RSVP_FIRST,
     label: "🔐 RSVP first",
-    helper: "Les détails exacts se débloquent après approbation de l’hôte."
+    helper: "The exact details are unlocked after host approval."
   },
   {
     key: VISIBILITY_MODES.CIRCLE_OPEN,
     label: "👥 Circle open",
-    helper: "Tout le cercle autorisé voit immédiatement tous les détails."
+    helper: "The entire authorized circle immediately sees all the details."
   },
   {
     key: VISIBILITY_MODES.PUBLIC_VIBE,

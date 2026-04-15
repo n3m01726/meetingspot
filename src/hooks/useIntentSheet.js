@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { VISIBILITY_MODES } from "../constants/ui.js";
+import { CIRCLES, VISIBILITY_MODES } from "../constants/ui.js";
 import { fetchJson } from "../lib/api.js";
 
 const initialForm = {
@@ -67,10 +67,9 @@ function useIntentSheet(onPlanCreated, currentUser) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           friendName: selectedAvatar?.name || "",
-          activity: intent || "Custom",
           title: form.title,
-          visibilityMode: form.visibilityMode,
-          circle: selectedAvatar?.relationshipCircle || selectedAvatar?.circle || currentUser?.circle || "Connexions",
+          visibilityModeId: form.visibilityMode,
+          targetCircleId: selectedAvatar?.relationshipCircleId || currentUser?.circleId || CIRCLES.CONNEXIONS,
           area: form.area,
           venue: form.venue,
           timeLabel: timeLabelMap[form.timeRange] || "Plus tard"

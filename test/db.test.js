@@ -3,6 +3,7 @@ const assert = require("node:assert/strict");
 
 const {
   VISIBILITY_MODES,
+  buildPlanAccessState,
   getOverview,
   getPlanSummaryRows,
   getPlanDetail,
@@ -13,6 +14,14 @@ const {
   upsertRsvp,
   approvePlanParticipant
 } = require("../server/db");
+const { PLAN_ROLES, getUserRolesForPlan } = require("../server/domain/roles");
+const {
+  canViewPlanSummary,
+  canViewPlanDetails,
+  canApproveRsvp,
+  canCheckIn,
+  canEditPlan
+} = require("../server/domain/permissions");
 const {
   validatePlanPayload,
   validatePlanUpdatePayload,
@@ -72,7 +81,6 @@ test("circle visibility depends on host-viewer relationship, not a global user c
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: ana.id,
     momentumLabel: "Test",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Plateau",
@@ -102,7 +110,6 @@ test("a viewer can be inner circle for one host and not for another", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: nora.id,
     momentumLabel: "Test",
-    momentumTone: "normal",
     timeLabel: "Maintenant",
     durationLabel: "1 h",
     area: "Plateau",
@@ -119,7 +126,6 @@ test("a viewer can be inner circle for one host and not for another", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: ana.id,
     momentumLabel: "Test",
-    momentumTone: "normal",
     timeLabel: "Maintenant",
     durationLabel: "1 h",
     area: "Rosemont",
@@ -160,8 +166,22 @@ test("plan detail exposes participants and checkins when access is full", () => 
 });
 
 test("plan detail is blocked when user lacks summary access", () => {
+  const nora = getUserById(1);
   const maya = getUserById(4);
-  const detail = getPlanDetail(1, maya);
+  const restrictedPlan = createPlan({
+    title: "Plan bloque pour Maya",
+    hostUserId: nora.id,
+    circle: "Inner Circle",
+    visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
+    momentumLabel: "Test",
+    timeLabel: "Maintenant",
+    durationLabel: "30 min",
+    area: "Plateau",
+    locationDetail: "Spot prive",
+    summary: "Visible seulement au inner circle de Nora.",
+    isOnline: false
+  });
+  const detail = getPlanDetail(restrictedPlan.id, maya);
 
   assert.equal(detail, null);
 });
@@ -177,6 +197,48 @@ test("admin sees full detail and rsvps on restricted plans", () => {
   assert.ok(detail.participants.length > 0);
 });
 
+test("role resolver returns host role with full plan permissions", () => {
+  const nora = getUserById(1);
+  const detail = getPlanDetail(1, nora);
+
+  assert.ok(detail.viewerRoles.includes(PLAN_ROLES.HOST));
+  assert.ok(detail.viewerRoles.includes(PLAN_ROLES.ADMIN));
+  assert.equal(detail.permissions.canViewSummary, true);
+  assert.equal(detail.permissions.canViewDetails, true);
+  assert.equal(detail.permissions.canApproveRsvps, false);
+  assert.equal(detail.permissions.canCheckIn, true);
+  assert.equal(detail.permissions.canEditPlan, true);
+});
+
+test("role resolver keeps pending participants locked on RSVP first plans", () => {
+  const chris = getUserById(5);
+  const maya = getUserById(4);
+  const plan = createPlan({
+    title: "Role pending plan",
+    activity: "Coffee",
+    circle: "Connexions",
+    visibilityMode: VISIBILITY_MODES.RSVP_FIRST,
+    hostUserId: chris.id,
+    momentumLabel: "Test",
+    timeLabel: "Ce soir",
+    durationLabel: "45 min",
+    area: "Plateau",
+    locationDetail: "Cafe test",
+    summary: "Plan pour tester les rôles pending.",
+    addressRule: "Les détails exacts se débloquent après approbation.",
+    isOnline: false
+  });
+
+  upsertRsvp(plan.id, maya.id, "down", maya);
+  const lockedDetail = getPlanDetail(plan.id, maya);
+
+  assert.ok(lockedDetail.viewerRoles.includes(PLAN_ROLES.PENDING_PARTICIPANT));
+  assert.equal(lockedDetail.viewerRoles.includes(PLAN_ROLES.APPROVED_PARTICIPANT), false);
+  assert.equal(lockedDetail.permissions.canViewSummary, true);
+  assert.equal(lockedDetail.permissions.canViewDetails, false);
+  assert.equal(lockedDetail.permissions.canCheckIn, false);
+});
+
 test("rsvp first keeps detail locked until host approval", () => {
   const chris = getUserById(5);
   const maya = getUserById(4);
@@ -187,7 +249,6 @@ test("rsvp first keeps detail locked until host approval", () => {
     visibilityMode: VISIBILITY_MODES.RSVP_FIRST,
     hostUserId: chris.id,
     momentumLabel: "Nouveau",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Plateau",
@@ -238,7 +299,6 @@ test("passing on a plan removes the participant instead of changing the RSVP sta
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: nora.id,
     momentumLabel: "Test",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "30 min",
     area: "Plateau",
@@ -274,7 +334,6 @@ test("public vibe exposes full detail beyond the base circle", () => {
     visibilityMode: VISIBILITY_MODES.PUBLIC_VIBE,
     hostUserId: nora.id,
     momentumLabel: "Public",
-    momentumTone: "normal",
     timeLabel: "Maintenant",
     durationLabel: "1 h",
     area: "Canal",
@@ -288,6 +347,53 @@ test("public vibe exposes full detail beyond the base circle", () => {
   assert.ok(detail);
   assert.equal(detail.detailAccess, "full");
   assert.equal(detail.visibilityMode, VISIBILITY_MODES.PUBLIC_VIBE);
+  assert.ok(detail.viewerRoles.includes(PLAN_ROLES.PUBLIC_VIEWER));
+  assert.equal(detail.permissions.canViewDetails, true);
+});
+
+test("permission helpers support multi-role resolution", () => {
+  const roles = getUserRolesForPlan({ id: 1, isAdmin: true }, { hostUserId: 1, targetCircleId: 2, visibilityModeId: VISIBILITY_MODES.RSVP_FIRST }, {
+    approvalStatus: "approved",
+    relationshipCircleId: 2
+  });
+
+  assert.ok(roles.includes(PLAN_ROLES.ADMIN));
+  assert.ok(roles.includes(PLAN_ROLES.HOST));
+  assert.ok(roles.includes(PLAN_ROLES.APPROVED_PARTICIPANT));
+  assert.equal(canViewPlanSummary(roles, { visibilityModeId: VISIBILITY_MODES.RSVP_FIRST }), true);
+  assert.equal(canViewPlanDetails(roles, { visibilityModeId: VISIBILITY_MODES.RSVP_FIRST }), true);
+  assert.equal(canApproveRsvp(roles, { visibilityModeId: VISIBILITY_MODES.RSVP_FIRST }), true);
+  assert.equal(canCheckIn(roles), true);
+  assert.equal(canEditPlan(roles), true);
+});
+
+test("buildPlanAccessState exposes centralized permissions for approved participants", () => {
+  const chris = getUserById(5);
+  const maya = getUserById(4);
+  const plan = createPlan({
+    title: "Approved roles plan",
+    activity: "Coffee",
+    circle: "Connexions",
+    visibilityMode: VISIBILITY_MODES.RSVP_FIRST,
+    hostUserId: chris.id,
+    momentumLabel: "Test",
+    timeLabel: "Demain",
+    durationLabel: "1 h",
+    area: "Plateau",
+    locationDetail: "Cafe test",
+    summary: "Plan pour tester approved participant.",
+    addressRule: "Les détails exacts se débloquent après approbation.",
+    isOnline: false
+  });
+
+  upsertRsvp(plan.id, maya.id, "down", maya);
+  approvePlanParticipant(plan.id, chris.id, maya.id);
+  const accessState = buildPlanAccessState({ id: plan.id, hostUserId: chris.id, circle: "Connexions", visibilityMode: VISIBILITY_MODES.RSVP_FIRST }, maya);
+
+  assert.ok(accessState.roles.includes(PLAN_ROLES.APPROVED_PARTICIPANT));
+  assert.equal(accessState.permissions.canViewSummary, true);
+  assert.equal(accessState.permissions.canViewDetails, true);
+  assert.equal(accessState.permissions.canCheckIn, true);
 });
 
 test("host can edit their own plan", () => {
@@ -299,7 +405,6 @@ test("host can edit their own plan", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: chris.id,
     momentumLabel: "Nouveau",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Plateau",
@@ -337,7 +442,6 @@ test("non-host cannot edit someone else's plan", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: chris.id,
     momentumLabel: "Nouveau",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Centre-ville",
@@ -370,7 +474,6 @@ test("host can delete their own plan", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: chris.id,
     momentumLabel: "Nouveau",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Canal",
@@ -396,7 +499,6 @@ test("non-host cannot delete someone else's plan", () => {
     visibilityMode: VISIBILITY_MODES.CIRCLE_OPEN,
     hostUserId: chris.id,
     momentumLabel: "Nouveau",
-    momentumTone: "normal",
     timeLabel: "Ce soir",
     durationLabel: "45 min",
     area: "Plateau",
