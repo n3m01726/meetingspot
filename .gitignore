@@ -1,7 +1,0 @@
-dist/
-node_modules/
-data/
-*.log
-*.tsbuildinfo
-favicon.ico
-docs/
