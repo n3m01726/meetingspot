@@ -33,33 +33,26 @@ export const availabilityToneMap = {
 };
 
 export const availabilityLabelMap = {
-  down: "J’en suis",
-  probable: "Probable",
-  maybe: "Indisponible"
+  down: "I'm in!",
+  probable: "Probably"
 };
 
 export const availabilityMap = {
   down: {
-    label: "J’en suis",
+    label: "I'm in!",
     icon: CircleCheck,
     className: "btn--primary-icon",
   },
   maybe: {
-    label: "Peut-être",
+    label: "maybe",
     icon: CircleHelp,
     className: "btn--secondary-icon",
-  },
-  "not-here": {
-    label: "Indisponible",
-    icon: CircleX,
-    className: "btn--ghost-icon",
-  },
+  }
 };
 
 export const responseLabelMap = {
-  down: "J’en suis",
-  maybe: "Peut-être",
-  nothere: "Indisponible"
+  down: "I'm in!",
+  maybe: "maybe"
 };
 
 export const intentOptions = [
@@ -72,28 +65,28 @@ export const intentOptions = [
 ];
 
 export const quickFilters = [
-  { key: "all", label: "Tous" },
-  { key: "now", label: "Maintenant" },
-  { key: "tonight", label: "Ce soir" },
-  { key: "online", label: "En ligne" }
+  { key: "all", label: "all" },
+  { key: "now", label: "now" },
+  { key: "tonight", label: "tonight" },
+  { key: "online", label: "online now" }
 ];
 
 export const visibilityFilters = [
-  { key: "all", label: "Tous les cercles", tone: "" },
+  { key: "all", label: "All circles", tone: "" },
   { key: String(CIRCLES.INNER), label: "Inner Circle", tone: "inner" },
-  { key: String(CIRCLES.CONNEXIONS), label: "Connexions", tone: "connections" }
+  { key: String(CIRCLES.CONNEXIONS), label: "Connections", tone: "connections" }
 ];
 
 export const visibilityModeOptions = [
   {
     key: VISIBILITY_MODES.RSVP_FIRST,
     label: "🔐 RSVP first",
-    helper: "Les détails exacts se débloquent après approbation de l’hôte."
+    helper: "The exact details are unlocked after host approval."
   },
   {
     key: VISIBILITY_MODES.CIRCLE_OPEN,
     label: "👥 Circle open",
-    helper: "Tout le cercle autorisé voit immédiatement tous les détails."
+    helper: "The entire authorized circle immediately sees all the details."
   },
   {
     key: VISIBILITY_MODES.PUBLIC_VIBE,

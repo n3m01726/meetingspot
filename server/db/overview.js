@@ -4,9 +4,9 @@ const { getRelationshipCircleId } = require("./participants");
 const { circleIdToLabel } = require("./constants");
 
 function availabilityLabel(value) {
-  if (value === "down") return "Fort probable";
-  if (value === "probable") return "Probable";
-  return "Indisponible";
+  if (value === "down") return "I'm in!";
+  if (value === "probable") return "maybe";
+  return "offline";
 }
 
 function getPresenceRows() {

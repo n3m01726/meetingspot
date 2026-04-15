@@ -101,14 +101,14 @@ function HomePage() {
               <span className="brand__mark">MS</span>
               <div>
                 <h1>meetingspot</h1>
-                <p>spontaneite sociale</p>
+                <p>spontaneously social</p>
               </div>
             </div>
             <div className="topbar__meta">
               <div className="stats-list" aria-label="Statistiques globales">
-                <StatItem value={overview.stats.availableNow} label="personnes dispo dans l'heure" />
-                <StatItem value={overview.stats.activePlans} label="plans actifs autour de toi" />
-                <StatItem value={overview.stats.averageRadius} label="rayon moyen des plans spontanes" />
+                <StatItem value={overview.stats.availableNow} label="available (1 hour)" />
+                <StatItem value={overview.stats.activePlans} label="active plans around you" />
+                <StatItem value={overview.stats.averageRadius} label="distance from you" />
               </div>
             </div>
             <div className="topbar__mobile-actions">
@@ -119,18 +119,18 @@ function HomePage() {
                 <div className="mobile-menu__sheet">
                   <button type="button" onClick={() => intentSheet.openIntentSheet()}>
                     <Plus size={16} />
-                    <span>Creer un plan</span>
+                    <span>Make a plan</span>
                   </button>
-                  <a href="#presence"><Users size={16} /><span>Qui est la ?</span></a>
-                  <a href="#plans"><Sparkles size={16} /><span>Plans spontanes</span></a>
+                  <a href="#presence"><Users size={16} /><span>Who's there?</span></a>
+                  <a href="#plans"><Sparkles size={16} /><span>Spontaneous plans</span></a>
                 </div>
               </details>
             </div>
           </nav>
           <div className="stats-list stats-list--mobile" aria-label="Statistiques globales">
-            <StatItem compact value={overview.stats.availableNow} label="dispo dans l'heure" />
-            <StatItem compact value={overview.stats.activePlans} label="plans autour de toi" />
-            <StatItem compact value={overview.stats.averageRadius} label="rayon moyen" />
+            <StatItem compact value={overview.stats.availableNow} label="available now" />
+            <StatItem compact value={overview.stats.activePlans} label="active plans around you" />
+            <StatItem compact value={overview.stats.averageRadius} label="average distance from you" />
           </div>
         </header>
 
@@ -138,7 +138,7 @@ function HomePage() {
           <section className="panel panel--presence" id="presence">
             <div className="section-header section-header--compact">
               <div>
-                <h3>Qui est la ?</h3>
+                <h3>who's there?</h3>
               </div>
             </div>
 
@@ -179,7 +179,7 @@ function HomePage() {
                 <div className="avatar-strip__ring avatar-strip__ring--blue avatar-strip__ring--add-contact">
                   <span className="avatar-strip__add-icon" aria-hidden="true"><UserPlus size={30} color="#fff" /></span>
                 </div>
-                <small>Ajouter contact</small>
+                <small>add contact</small>
               </article>
             </div>
           </section>
@@ -187,7 +187,7 @@ function HomePage() {
           <section className="panel panel--plans" id="plans">
             <div className="section-header">
               <div>
-                <h3>Plans spontanes</h3>
+                <h3>spontaneous plans</h3>
               </div>
               <div className="plans-panel__actions">
                 <a className="drawer-trigger" href="#plans-controls" aria-label="Ouvrir les filtres">
@@ -210,7 +210,7 @@ function HomePage() {
             </div>
 
             {overviewState.error ? <p className="u-eyebrow">{overviewState.error}</p> : null}
-            {overview.plans.length === 0 ? <p className="u-eyebrow">Aucun plan pour ce filtre.</p> : null}
+            {overview.plans.length === 0 ? <p className="u-eyebrow">No plans with that filter.</p> : null}
 
             <div className="plans-panel__grid">
               {overview.plans.map((plan) => (
