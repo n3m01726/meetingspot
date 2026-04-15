@@ -31,15 +31,15 @@ function IntentSheet({
             ) : null}
             <div className="intent-sheet__selected-copy">
               <span className="intent-sheet__title">
-                {selectedAvatar ? "Creer un plan avec" : "Creer un plan"}
+                {selectedAvatar ? "make a plan with" : "make a plan"}
               </span>
-              {selectedAvatar ? <strong id="intent-sheet-title">{selectedAvatar.name}</strong> : <strong id="intent-sheet-title">Nouveau moment spontane</strong>}
+              {selectedAvatar ? <strong id="intent-sheet-title">{selectedAvatar.name}</strong> : <strong id="intent-sheet-title"></strong>}
               {selectedAvatar ? (
                 <span className="intent-sheet__selected-meta">
                   {`${selectedAvatar.availabilityLabel || availabilityLabelMap[selectedAvatar.availability]} - ${selectedAvatar.relationshipCircleLabel || selectedAvatar.circle || ""}`}
                 </span>
               ) : (
-                <span className="intent-sheet__selected-meta">Choisis une activite, un mode d'ouverture et un contexte simple.</span>
+                <span className="intent-sheet__selected-meta">Choose an activity, a method of opening and a simple context.</span>
               )}
             </div>
             <div className="intent-sheet__profile-icon"><UserRound size={32} /></div>
@@ -48,7 +48,7 @@ function IntentSheet({
 
         <div className={`intent-sheet__step ${intentStep === "intent" ? "intent-sheet__step--active" : ""}`}>
           <div className="intent-sheet__copy">
-            <p className="u-eyebrow">Qu'est-ce que vous pourriez faire ?</p>
+            <p className="u-eyebrow">What could you do?</p>
           </div>
           <div className="intent-sheet__intent-grid">
             {intentOptions.map(({ key, label, Icon }) => (
@@ -62,7 +62,7 @@ function IntentSheet({
 
         <form className={`intent-sheet__step form form--intent ${intentStep === "form" ? "intent-sheet__step--active" : ""}`} onSubmit={onSubmit}>
           <div className="form__field">
-            <label>Titre du plan</label>
+            <label>plan title</label>
             <input className="intent-sheet__title-input" type="text" value={form.title} onChange={(event) => onFormChange({ ...form, title: event.target.value })} />
             <span className="form__error" aria-live="polite"></span>
           </div>
@@ -77,7 +77,7 @@ function IntentSheet({
           ) : null}
 
           <fieldset className="form__fieldset">
-            <legend>Mode de visibilite</legend>
+            <legend>who can see your plan?</legend>
             <div className="visibility-grid">
               {visibilityModeOptions.map((option) => (
                 <label className="visibility-card" key={option.key}>
@@ -98,13 +98,13 @@ function IntentSheet({
           </fieldset>
 
           <fieldset className="form__fieldset">
-            <legend>Quand ?</legend>
+            <legend>when ?</legend>
             <div className="intent-sheet__time-options">
               {[
-                ["now", "Maintenant"],
-                ["in-30", "Dans 30 min"],
-                ["tonight", "Ce soir"],
-                ["custom", "Plus tard"]
+                ["now", "now"],
+                ["in-30", "in 30 min"],
+                ["tonight", "tonight"],
+                ["custom", "later"]
               ].map(([value, label]) => (
                 <label className="intent-sheet__radio-chip" key={value}>
                   <input type="radio" name="intent-time-range" value={value} checked={form.timeRange === value} onChange={(event) => onFormChange({ ...form, timeRange: event.target.value })} />
@@ -116,13 +116,13 @@ function IntentSheet({
           </fieldset>
 
           <div className="form__field">
-            <label>Quartier</label>
+            <label>Neighborhood</label>
             <input type="text" placeholder="Plateau / Mile End / Centre-ville" value={form.area} onChange={(event) => onFormChange({ ...form, area: event.target.value })} />
             <span className="form__error" aria-live="polite"></span>
           </div>
 
           <div className="form__field">
-            <label>Lieu approximatif</label>
+            <label>Approximate location</label>
             <input type="text" placeholder="Olympico / parc / Discord" value={form.venue} onChange={(event) => onFormChange({ ...form, venue: event.target.value })} />
             <span className="form__error" aria-live="polite"></span>
           </div>
