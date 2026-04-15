@@ -4,12 +4,13 @@
 
 .avatar-popover-wrapper {
   position: relative;
+  display: inline-block;
+  z-index: 5;
 }
 
-// Le trigger a une vraie surface cliquable — pas de display:contents
 .avatar-popover-trigger {
   cursor: pointer;
-  display: block; // surface réelle pour recevoir les clics
+  display: block;
   outline: none;
 
   &:focus-visible {
